@@ -15,6 +15,11 @@ class GenAccompanimentPattern extends GenerationMethod {
   
   private static final int MIN_STARTING_OCTAVE = 2;
   private static final int MAX_STARTING_OCTAVE = 4;
+  
+  // The chance of calculating a new pattern even when there
+  // is a passed in state.
+  private static final float PATTERN_CHANGE_PROBABILITY = 0.05;
+  private static final float CONSECUTIVE_SAME_NOTE_PROBABILITY = 0.2;
 
   //public GenAccompanimentPattern() {
   //  super();
@@ -70,12 +75,19 @@ class GenAccompanimentPattern extends GenerationMethod {
       // Move the new note's pitch to a pitch from the current harmony.
       // Pick from harmony the closest possible pitch.
       NoteEvent[] curHarmony = harmonyController.getHarmonyAtTime(curTime);
+      
       int closestPitchIndex = -1;
       int closestPitchDiff = 200; // Just a high number
       for (int i = 0; i < curHarmony.length; ++i) {
         int thisPitchDiff = 
           getClosestPitch(calculateKey(curHarmony[i]), newNote) - newNote.getPitch();
         if (abs(thisPitchDiff) < abs(closestPitchDiff)) {
+          // If this would have been the same note as the previous,
+          // Only do it if there are no other options or based on the dice roll.
+          if (gen.size() > 0 && gen.get(gen.size() - 1).getPitch() == newNote.getPitch() + thisPitchDiff &&
+            (!(closestPitchIndex == -1 && i == curHarmony.length - 1) || random(1.0f) > CONSECUTIVE_SAME_NOTE_PROBABILITY)) {
+            continue;
+          }
           closestPitchIndex = i;
           closestPitchDiff = thisPitchDiff;
         }
@@ -100,7 +112,8 @@ class GenAccompanimentPattern extends GenerationMethod {
   private static final float PITCH_VARIATION_MEAN = 0f;
   private PatternEntity[] calculatePattern(DataPacketSet dataSet) {
     DataPacket[] data = dataSet.data;
-    if (data != null && data.length > 0 && data[0].type == PatternEntity[].class) {
+    if (data != null && data.length > 0 && data[0].type == PatternEntity[].class &&
+      random(1f) > PATTERN_CHANGE_PROBABILITY) {
       println("Using the same pattern.");
       return (PatternEntity[])data[0].value;
     } else {
