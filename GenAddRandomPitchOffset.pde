@@ -3,7 +3,7 @@ import java.util.ArrayList;
 class GenAddRandomPitchOffset extends GenerationMethod {
   
   @Override
-  NoteEvent[] generateFromSeed(NoteEvent[] seed) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     println("Adding random offset.");
     ArrayList<NoteEvent> gen = new ArrayList<NoteEvent>();
     

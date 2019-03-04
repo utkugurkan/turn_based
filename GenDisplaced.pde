@@ -8,7 +8,7 @@ class GenDisplaced extends GenerationMethod {
   static final int MAX_TIME_ADDITION_TO_SEED = 500; // in ms
   
   @Override
-  NoteEvent[] generateFromSeed(NoteEvent[] seed) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     println("Generating displaced.");
     
     int minDisplacement = -1 * seed[0].getStartTime();

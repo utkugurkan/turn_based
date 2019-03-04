@@ -8,7 +8,7 @@ class GenHarmony extends GenerationMethod {
   //static final int MAX_HARM_COUNT = 5;
   
   @Override
-  NoteEvent[] generateFromSeed(NoteEvent[] seedIn) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seedIn, DataPacketSet dataSet) {
     println("Generating harmony.");
     
     TreeMap<Integer, NoteEvent[]> harms = harmonyController.getHarmonizedSeed();

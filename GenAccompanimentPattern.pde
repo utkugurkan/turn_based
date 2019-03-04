@@ -21,7 +21,7 @@ class GenAccompanimentPattern extends GenerationMethod {
   //}
 
   @Override
-    NoteEvent[] generateFromSeed(NoteEvent[] seed) {
+    NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     println("Generating accompaniment pattern.");
 
     int shortestNoteDuration = int(map(
@@ -32,8 +32,8 @@ class GenAccompanimentPattern extends GenerationMethod {
       MAX_SHORTEST_NOTE_DURATION));
     println("shortestNoteDuration: " + shortestNoteDuration);
 
-    int patternLength = int(random(MIN_PATTERN_LENGTH, MAX_PATTERN_LENGTH));
-    PatternEntity[] pattern = calculatePattern(patternLength);
+    //int patternLength = int(random(MIN_PATTERN_LENGTH, MAX_PATTERN_LENGTH));
+    PatternEntity[] pattern = calculatePattern(dataSet);
 
     int curTime = 0;
     int patternIndex = 0;
@@ -90,6 +90,7 @@ class GenAccompanimentPattern extends GenerationMethod {
       patternIndex = (patternIndex + 1) % pattern.length;
     }
 
+    setData(dataSet, pattern);
     NoteEvent[] genArr = new NoteEvent[gen.size()];
     return gen.toArray(genArr);
   }
@@ -97,7 +98,21 @@ class GenAccompanimentPattern extends GenerationMethod {
   private static final float NOTE_LENGTH_BASE_STANDARD_DEVIATION = 0.5f;
   private static final float PITCH_VARIATION_STANDARD_DEVIATION = 6f;
   private static final float PITCH_VARIATION_MEAN = 0f;
-  private PatternEntity[] calculatePattern(int patternLength) {
+  private PatternEntity[] calculatePattern(DataPacketSet dataSet) {
+    DataPacket[] data = dataSet.data;
+    if (data != null && data.length > 0 && data[0].type == PatternEntity[].class) {
+      println("Using the same pattern.");
+      return (PatternEntity[])data[0].value;
+    } else {
+      println("Not using the same pattern.");
+      if (data != null && data.length > 0) {
+        println("Data type: " + data[0].type);
+        println("Tested type: " + DataPacket[].class);
+      }
+    }
+    
+    int patternLength = int(random(MIN_PATTERN_LENGTH, MAX_PATTERN_LENGTH));
+    
     ArrayList<PatternEntity> pattern = new ArrayList<PatternEntity>();
     int curLength = 0;
     while (curLength < patternLength) {
@@ -148,6 +163,13 @@ class GenAccompanimentPattern extends GenerationMethod {
     return pattern.toArray(patternArr);
   }
   
+  // Sets the state data that was passed in
+  // to the generation method.
+  private void setData(DataPacketSet dataSet, PatternEntity[] pattern) {
+    dataSet.data = new DataPacket[1];
+    dataSet.data[0] = new DataPacket(pattern);
+  }
+  
   // Use this function to get the pitch to use, given the pitch of the previous note
   // as well as the pitch difference as determined by the pattern.
   // This function will consider the minimum and maximum pitches to adjust
@@ -165,7 +187,7 @@ class GenAccompanimentPattern extends GenerationMethod {
     return suggestedPitch;
   }
 
-  private class PatternEntity {
+  public class PatternEntity {
     public PatternEntity(int pitchIn, int lengthIn) {
       pitchDifferenceFromPrev = pitchIn;
       length = lengthIn;

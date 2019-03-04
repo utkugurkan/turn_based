@@ -24,7 +24,7 @@ class GenMelody extends GenerationMethod {
   };
   
   @Override
-  NoteEvent[] generateFromSeed(NoteEvent[] seed) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     println("Generating melody.");
     
     TreeMap<Integer, NoteEvent[]> harmonizedSeed = harmonyController.getHarmonizedSeed();

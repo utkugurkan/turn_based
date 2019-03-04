@@ -3,7 +3,7 @@ import java.util.ArrayList;
 class GenAddOctaves extends GenerationMethod {
   
   @Override
-  NoteEvent[] generateFromSeed(NoteEvent[] seed_in) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seed_in, DataPacketSet dataSet) {
     println("Adding octaves.");
     NoteEvent[] seed = deepClone(seed_in);
     ArrayList<NoteEvent> gen = new ArrayList<NoteEvent>();

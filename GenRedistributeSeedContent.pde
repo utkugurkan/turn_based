@@ -1,7 +1,7 @@
 // Keeps the seed same.
 class GenRedistributeSeedContent extends GenerationMethod {
   @Override
-  NoteEvent[] generateFromSeed(NoteEvent[] seed) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     
     println("Generating Redistribution.");
     int endTime = getEndTime(seed);

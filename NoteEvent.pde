@@ -81,6 +81,14 @@ class NoteEvent {
     _duration = duration;
   }
   
+  boolean Equals(NoteEvent other) {
+    return 
+      _pitch == other._pitch &&
+      _velocity == other._velocity &&
+      _startTime == other._startTime &&
+      _duration == other._duration;
+  }
+  
   private int _pitch;
   private int _velocity;
   private int _startTime;

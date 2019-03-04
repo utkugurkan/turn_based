@@ -7,7 +7,7 @@ class GenFillBetweenNotes extends GenerationMethod {
   static final int MIN_NOTE_DURATION = 50;
   
   @Override
-  NoteEvent[] generateFromSeed(NoteEvent[] seedIn) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seedIn, DataPacketSet dataSet) {
     println("Filling between notes.");
     NoteEvent[] seed = deepClone(seedIn);
     

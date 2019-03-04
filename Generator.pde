@@ -23,6 +23,7 @@ final GenerationMethod[] GEN_METHODS = {
 class Generator {
   public Generator() {
     resetState();
+    _genMethodState = new DataPacketSet();
   }
   
   public void update() {
@@ -47,7 +48,10 @@ class Generator {
     _busy = true; // Set busy until all the generated material is played (based on the end time).
     //GenerationMethod randomGenMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
     selectGenMethod();
-    NoteEvent[] genResult = _genMethod.generateFromSeed(seed);
+    NoteEvent[] genResult = _genMethod.generateFromSeed(seed, _genMethodState);
+    if (_genMethodState == null) {
+      println("Gen method is still null");
+    }
     
     // Set the end time of the generated material. This Generator will become available
     // at _jobFinishTime.
@@ -74,4 +78,5 @@ class Generator {
   private int _jobFinishTime;
   private GenerationMethod _genMethod = null;
   private float _genMethodRepeatRate = 0.5;
+  private DataPacketSet _genMethodState = null;
 }

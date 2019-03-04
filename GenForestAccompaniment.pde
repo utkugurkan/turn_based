@@ -7,7 +7,7 @@ class GenForestAccompaniment extends GenerationMethod {
   static final int MAX_NOTE_DURATION = 500;
   
   @Override
-  NoteEvent[] generateFromSeed(NoteEvent[] seed) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     // Order for each subset: seed note, boundary note, everything else.
     // Pitch-wise:
     // Boundary note is the farthest any generated note can get from the seed note.

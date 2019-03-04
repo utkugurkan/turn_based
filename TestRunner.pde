@@ -15,5 +15,6 @@ public class TestRunner {
     testLoudness.runAllTests();
     testNoteEventUtil.runAllTests();
     testStatsUtil.runAllTests();
+    testDataPacket.runAllTests();
   }
 }
