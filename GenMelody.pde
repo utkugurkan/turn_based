@@ -23,6 +23,17 @@ class GenMelody extends GenerationMethod {
     0.125f
   };
   
+  //@Override
+  //NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
+  //  println("Generating melody.");
+    
+  //  TreeMap<Integer, NoteEvent[]> harmonizedSeed = harmonyController.getHarmonizedSeed();
+  //  if (harmonizedSeed.isEmpty()) {
+  //    return new NoteEvent[0];
+  //  }
+    
+  //}
+  
   @Override
   NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     println("Generating melody.");
@@ -75,27 +86,6 @@ class GenMelody extends GenerationMethod {
         break;
       }
       int fractionIndex = int(random(minFractionIndex, maxFractionIndex));
-      
-      //boolean finishAdding = false;
-      //while (ALLOWABLE_FRACTIONS[fractionIndex] * unitNoteLength > remainingTime) {
-      //  if (fractionIndex > 0) {
-      //    --fractionIndex;
-      //  }
-      //  else {
-      //    finishAdding = true;
-      //    break;
-      //  }
-      //}
-      
-      //// We can't fit anything else.
-      //// TODO: Consider extending the length of the previous note?
-      //if (ALLOWABLE_FRACTIONS[fractionIndex] * unitNoteLength < MIN_NOTE_DURATION) {
-      //  finishAdding = true;
-      //}
-      
-      //if (finishAdding) {
-      //  break;
-      //}
       
       NoteEvent[] harmNotes = harmonyController.getHarmonyAtTime(curTime);
       int harmIndex = int(random(harmNotes.length));

@@ -23,6 +23,15 @@ public abstract class GenerationMethod {
   // same type of GenerationMethod.
   abstract NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet);
   
-  //protected int _numberOfGenerationsRecommended;
-  //protected int _numberOfGenerationsExecuted = 0;
+  public int getMinRecommendedGenerationCount() {
+    return _minRecommendedNumberOfGenerations;
+  }
+  
+  public int getMaxRecommendedGenerationCount() {
+    return _maxRecommendedNumberOfGenerations;
+  }
+  
+  protected int _minRecommendedNumberOfGenerations = 1;
+  protected int _maxRecommendedNumberOfGenerations = 1;
+  //_numberOfGenerationsRecommended;
 }

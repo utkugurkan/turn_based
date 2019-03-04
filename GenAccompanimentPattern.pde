@@ -20,10 +20,16 @@ class GenAccompanimentPattern extends GenerationMethod {
   // is a passed in state.
   private static final float PATTERN_CHANGE_PROBABILITY = 0.05;
   private static final float CONSECUTIVE_SAME_NOTE_PROBABILITY = 0.2;
+  
+  private static final int MIN_RECOMMENDED_NUMBER_OF_GENERATIONS = 6;
+  private static final int MAX_RECOMMENDED_NUMBER_OF_GENERATIONS = 24;
 
-  //public GenAccompanimentPattern() {
-  //  super();
-  //}
+  public GenAccompanimentPattern() {
+    super();
+    
+    _minRecommendedNumberOfGenerations = MIN_RECOMMENDED_NUMBER_OF_GENERATIONS;
+    _maxRecommendedNumberOfGenerations = MAX_RECOMMENDED_NUMBER_OF_GENERATIONS;
+  }
 
   @Override
     NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
@@ -35,7 +41,7 @@ class GenAccompanimentPattern extends GenerationMethod {
       StateProperty.MIN_VAL, 
       MIN_SHORTEST_NOTE_DURATION, 
       MAX_SHORTEST_NOTE_DURATION));
-    println("shortestNoteDuration: " + shortestNoteDuration);
+    //println("shortestNoteDuration: " + shortestNoteDuration);
 
     //int patternLength = int(random(MIN_PATTERN_LENGTH, MAX_PATTERN_LENGTH));
     PatternEntity[] pattern = calculatePattern(dataSet);
@@ -120,7 +126,6 @@ class GenAccompanimentPattern extends GenerationMethod {
       println("Not using the same pattern.");
       if (data != null && data.length > 0) {
         println("Data type: " + data[0].type);
-        println("Tested type: " + DataPacket[].class);
       }
     }
     

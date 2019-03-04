@@ -56,6 +56,7 @@ class Generator {
     // Set the end time of the generated material. This Generator will become available
     // at _jobFinishTime.
     _jobFinishTime = millis() + getEndTime(seed);
+    ++_genMethodRepeatCurrentCount;
     
     return genResult;
   }
@@ -66,17 +67,37 @@ class Generator {
   }
   
   private void selectGenMethod() {
-    if (_genMethod != null && random(1.0) <= _genMethodRepeatRate) {
-      return;
-    }
-    else {
+    //if (_genMethod != null && random(1.0) <= _genMethodRepeatRate) {
+    //  return;
+    //}
+    //else {
+    //  _genMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
+    //}
+    
+    // Repeated as many times as the target.
+    // So we can pick a new one.
+    if (_genMethodRepeatCurrentCount == _genMethodRepeatTarget) {
+      println("ATTENTION!!! Picking new generation method.");
       _genMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
+      int minRepetition = _genMethod.getMinRecommendedGenerationCount();
+      int maxRepetition = _genMethod.getMaxRecommendedGenerationCount();
+      int halfRange = (maxRepetition - minRepetition) / 2;
+      int mean = halfRange + minRepetition;
+      
+      
+      _genMethodRepeatTarget = int(randomTruncatedGaussian(minRepetition, maxRepetition, mean, halfRange));
+      println("Generation method will be repeated for times: " + _genMethodRepeatTarget);
+      _genMethodRepeatCurrentCount = 0;
     }
   }
+  
   
   private boolean _busy;
   private int _jobFinishTime;
   private GenerationMethod _genMethod = null;
-  private float _genMethodRepeatRate = 0.5;
+  //private float _genMethodRepeatRate = 0.5;
   private DataPacketSet _genMethodState = null;
+  private int _genMethodRepeatTarget;
+  private int _genMethodRepeatCurrentCount;
+  
 }
