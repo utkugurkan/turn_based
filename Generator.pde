@@ -10,7 +10,7 @@ final GenerationMethod[] GEN_METHODS = {
     //new GenRedistributeSeedContent(),
     //new GenForestAccompaniment(),
     //new GenHarmony(),
-    //new GenMelody(),
+    new GenMelody(),
     new GenAccompanimentPattern()
 };
 

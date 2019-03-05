@@ -1,4 +1,4 @@
-final int GENERATOR_COUNT = 1;
+final int GENERATOR_COUNT = 2;
 
 class Model {  
   public Model() {

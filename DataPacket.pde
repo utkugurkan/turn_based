@@ -25,8 +25,8 @@ public class DataPacket<T> {
 }
 
 public enum DataPacketType {
-  PATTERN_ENTITY(GenAccompanimentPattern.PatternEntity.class),
-  PATTERN_ENTITY_ARRAY(GenAccompanimentPattern.PatternEntity[].class),
+  PATTERN_ENTITY(PatternEntity.class),
+  PATTERN_ENTITY_ARRAY(PatternEntity[].class),
   
   NOTE_EVENT(NoteEvent.class),
   NOTE_EVENT_ARRAY(NoteEvent[].class);

@@ -73,7 +73,7 @@ class GenAccompanimentPattern extends GenerationMethod {
       }
       // Create the new note with a potentially temporary pitch.
       NoteEvent newNote = new NoteEvent(
-        calculatePitchInRange(curNote.getPitch(), pattern[patternIndex].pitchDifferenceFromPrev),
+        calculatePitchInRange(curNote.getPitch(), pattern[patternIndex].pitchDiff),
         thisVelocity,
         curTime,
         pattern[patternIndex].length * shortestNoteDuration);
@@ -171,11 +171,11 @@ class GenAccompanimentPattern extends GenerationMethod {
       curLength += noteLength;
     }
     
-    println("Generated pattern length: " + pattern.size());
-    print("Generated pattern: ");
-    for (PatternEntity ent : pattern) {
-      ent.print();
-    }
+    //println("Generated pattern length: " + pattern.size());
+    //print("Generated pattern: ");
+    //for (PatternEntity ent : pattern) {
+    //  ent.print();
+    //}
     
     PatternEntity[] patternArr = new PatternEntity[pattern.size()];
     return pattern.toArray(patternArr);
@@ -203,20 +203,5 @@ class GenAccompanimentPattern extends GenerationMethod {
       suggestedPitch += PITCH_RANGE_FIT_FACTOR;
     }
     return suggestedPitch;
-  }
-
-  public class PatternEntity {
-    public PatternEntity(int pitchIn, int lengthIn) {
-      pitchDifferenceFromPrev = pitchIn;
-      length = lengthIn;
-    }
-    
-    public void print() {
-      println("Pattern entity with pitch difference: " + pitchDifferenceFromPrev + ", with length: " + length);
-    }
-    
-    // Set to 0 for the first note.
-    public int pitchDifferenceFromPrev;
-    public int length; // in terms of unit note.
   }
 }
