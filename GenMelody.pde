@@ -43,6 +43,9 @@ class GenMelody extends GenerationMethod {
     
     int endTime = getEndTime(seed);
     TemplateState templateState = genMelodyTemplate(endTime, dataSet);
+    if (templateState == null) {
+      return new NoteEvent[0];
+    }
     PatternEntity[] template = templateState.template;
     int curIndex = templateState.curIndex;
     int unitNoteLength = templateState.unitNoteLength;
@@ -187,6 +190,28 @@ class GenMelody extends GenerationMethod {
     int curLength = 0;
     int dominantFractionIndex = 0;
     int dominantFractionDurationLeft = 0;
+    
+    // Calculate acceptable fraction bounds. 
+    int minFractionIndex = -1;
+    int maxFractionIndex = -1;
+    for (int i = ALLOWABLE_FRACTIONS.length - 1; i >= 0; --i) {
+      if (ALLOWABLE_FRACTIONS[i] * unitNoteLength > MIN_NOTE_DURATION) {
+        minFractionIndex = i;
+        break;
+      }
+    }
+    for (int i = 0; i < ALLOWABLE_FRACTIONS.length; ++i) {
+      if (ALLOWABLE_FRACTIONS[i] * unitNoteLength < MAX_NOTE_DURATION) {
+        maxFractionIndex = i;
+        break;
+      }
+    }
+    
+    if (minFractionIndex == -1 || maxFractionIndex == -1) {
+      println("CRITICAL ERROR: No acceptable fractions for melody.");
+      return null;
+    }
+    
     while (curLength < templateLength) {
       
       if (dominantFractionDurationLeft <= 0) {
