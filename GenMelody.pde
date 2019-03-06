@@ -53,10 +53,11 @@ class GenMelody extends GenerationMethod {
     // as well as where we are in the harmonized seed.
     int curTime = 0;
     
-    // Set to a random reference point note at first, this will be updated in each iteration.
-    //NoteEvent lastNote = new NoteEvent(calculatePitch(Key.A, int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), 40, 0, 0);
-    
     while (curTime < endTime) {
+      // Set to a random reference point to start a new melodic line.
+      if (curIndex == 0) {
+        lastNote = new NoteEvent(calculatePitch(getRandomKey(), int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), 40, 0, 0);
+      }
       int fractionIndex = template[curIndex].length;
       
       //NoteEvent[] harmNotes = harmonyController.getHarmonyAtTime(curTime);
@@ -251,7 +252,7 @@ class GenMelody extends GenerationMethod {
     dataSet.data[3] = new DataPacket(templateState.prevNote);
   }
   
-  private static final int MIN_SEED_LENGTH_MULTIPLIER = 4;
+  private static final int MIN_SEED_LENGTH_MULTIPLIER = 2;
   private static final int MAX_SEED_LENGTH_MULTIPLIER = 12;
   private int calculateTemplateLength(int seedLength) {
     return seedLength * int(random(MIN_SEED_LENGTH_MULTIPLIER, MAX_SEED_LENGTH_MULTIPLIER + 0.5)); 

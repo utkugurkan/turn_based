@@ -20,8 +20,7 @@ class Model {
     
     ArrayList<NoteEvent[]> allGenResults;
     if (canExecuteNextTurn()) {
-      // Calculate harmonies.
-      harmonyController.update(seed);
+      updateSystemsPerTurnFrequency(seed);
       
       if (rhythmController.isEnabled()) {
         NoteEvent[] quantizedSeed = rhythmController.quantizeSeed(seed);
@@ -40,8 +39,6 @@ class Model {
         adjustSeedForBaseTime(singleGenResult, baseTime);
         player.addNotes(singleGenResult);
       }
-      
-      updateSystemsPerTurnFrequency();
     }
     
     
@@ -72,9 +69,11 @@ class Model {
     rhythmController.update();
   }
   
-  private void updateSystemsPerTurnFrequency() {
+  private void updateSystemsPerTurnFrequency(NoteEvent[] seed) {
     // Update the piece state.
     pieceState.update();
+    // Calculate harmonies.
+    harmonyController.update(seed);
   }
   
   private ArrayList<NoteEvent[]> genNextTurnMaterial(NoteEvent[] seed) {

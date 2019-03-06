@@ -12,8 +12,7 @@ public class TonalityStateProperty extends StateProperty {
   public void reset() {
     super.reset();
     
-    // Adding extra offset to include the max pitch.
-    _currentKey = Key.values()[int(random(Key.MIN_PITCH, Key.MAX_PITCH + 0.99))]; 
+    _currentKey = getRandomKey(); 
     //println(SCALES[0].length);
     _scaleIndex = int(random(SCALES.length));
     

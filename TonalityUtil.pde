@@ -1,6 +1,11 @@
 final int MIN_MIDI_NOTE = 21; // The lowest midi note, also an A.
 final int MAX_MIDI_NOTE = 108; // The lowest midi note, also an A.
 
+Key getRandomKey() {
+  // Adding extra offset to include the max pitch.
+  return Key.values()[int(random(Key.MIN_PITCH, Key.MAX_PITCH + 0.99))];
+}
+
 boolean isInKey(NoteEvent note) {
   int pitch = note.getPitch();
   Key curKey = pieceState.tonality.getKey();
