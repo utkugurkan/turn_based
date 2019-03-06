@@ -1,6 +1,6 @@
 class EffectDynamicRange extends EffectMethod {
   
-  final int[] DYNAMIC_RANGE_CENTER_POINTS = {20, 50, 70, 90, 110};
+  final int[] DYNAMIC_RANGE_CENTER_POINTS = {NoteEvent.VELOCITY_MIN, 50, 70, 90, NoteEvent.VELOCITY_MAX};
   
   @Override
   void apply(NoteEvent[] seed) {

@@ -11,7 +11,7 @@ final GenerationMethod[] GEN_METHODS = {
     //new GenForestAccompaniment(),
     //new GenHarmony(),
     new GenMelody(),
-    new GenAccompanimentPattern()
+    //new GenAccompanimentPattern()
 };
 
 //final Class[] GEN_METHOD_TYPES = {
@@ -33,7 +33,9 @@ class Generator {
   }
   
   public boolean isAvailable() {
-    return !_busy;
+    // TODO: Reconsider whether we actually need this.
+    return true;
+    //return !_busy;
   }
   
   public void setJobFinishTime(int finishTime) {

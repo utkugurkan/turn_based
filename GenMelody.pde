@@ -46,6 +46,7 @@ class GenMelody extends GenerationMethod {
     PatternEntity[] template = templateState.template;
     int curIndex = templateState.curIndex;
     int unitNoteLength = templateState.unitNoteLength;
+    NoteEvent lastNote = templateState.prevNote;
    
     ArrayList<NoteEvent> gen = new ArrayList<NoteEvent>();
     // We keep track of both the time that we have filled until
@@ -53,7 +54,7 @@ class GenMelody extends GenerationMethod {
     int curTime = 0;
     
     // Set to a random reference point note at first, this will be updated in each iteration.
-    NoteEvent lastNote = new NoteEvent(calculatePitch(Key.A, int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), 0, 0, 0);
+    //NoteEvent lastNote = new NoteEvent(calculatePitch(Key.A, int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), 40, 0, 0);
     
     while (curTime < endTime) {
       int fractionIndex = template[curIndex].length;
@@ -72,7 +73,7 @@ class GenMelody extends GenerationMethod {
       curIndex = (curIndex + 1) % template.length;
     }
     
-    TemplateState newTemplateState = new TemplateState(template, curIndex, unitNoteLength);
+    TemplateState newTemplateState = new TemplateState(template, curIndex, unitNoteLength, lastNote);
     saveData(dataSet, newTemplateState);
     
     NoteEvent[] genResultArr = new NoteEvent[gen.size()];
@@ -170,6 +171,7 @@ class GenMelody extends GenerationMethod {
     if (template != null) {
       return template;
     }
+    println("ATTN!! Generating new melody template");
     
     int templateLength = calculateTemplateLength(seedLength);
     
@@ -220,31 +222,33 @@ class GenMelody extends GenerationMethod {
     //  ent.print();
     //}
     
+    NoteEvent startingNote = new NoteEvent(calculatePitch(Key.A, int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), 40, 0, 0);
     PatternEntity[] patternArr = new PatternEntity[pattern.size()];
-    return new TemplateState(pattern.toArray(patternArr), 0, unitNoteLength);
+    return new TemplateState(pattern.toArray(patternArr), 0, unitNoteLength, startingNote);
   }
   
   
   private TemplateState unpackData(DataPacketSet dataSet) {
     DataPacket[] data = dataSet.data;
-    if (data != null && data.length > 2 && data[0].type == PatternEntity[].class &&
-      data[1].type == int.class && data[2].type == int.class) {
+    if (data != null && data.length >= 4 && data[0].type == PatternEntity[].class &&
+      data[1].type == Integer.class && data[2].type == Integer.class && data[3].type == NoteEvent.class) {
       //println("Using the same pattern.");
       PatternEntity[] template = (PatternEntity[])data[0].value;
       int curIndex = (int)data[1].value;
       int unitNoteLength = (int)data[2].value;
-      return new TemplateState(template, curIndex, unitNoteLength);
+      NoteEvent prevNote = (NoteEvent)data[3].value;
+      return new TemplateState(template, curIndex, unitNoteLength, prevNote);
     } else {
       return null;
     }
   }
   
   private void saveData(DataPacketSet dataSet, TemplateState templateState) {
-    DataPacket[] data = dataSet.data;
-    data = new DataPacket[3];
-    data[0] = new DataPacket(templateState.template);
-    data[1] = new DataPacket(templateState.curIndex);
-    data[2] = new DataPacket(templateState.unitNoteLength);
+    dataSet.data = new DataPacket[4];
+    dataSet.data[0] = new DataPacket(templateState.template);
+    dataSet.data[1] = new DataPacket(templateState.curIndex);
+    dataSet.data[2] = new DataPacket(templateState.unitNoteLength);
+    dataSet.data[3] = new DataPacket(templateState.prevNote);
   }
   
   private static final int MIN_SEED_LENGTH_MULTIPLIER = 4;
@@ -254,13 +258,15 @@ class GenMelody extends GenerationMethod {
   }
   
   private class TemplateState {
-    public TemplateState(PatternEntity[] templateIn, int curIndexIn, int unitNoteLengthIn) {
+    public TemplateState(PatternEntity[] templateIn, int curIndexIn, int unitNoteLengthIn, NoteEvent prevNoteIn) {
       template = templateIn;
       curIndex = curIndexIn;
       unitNoteLength = unitNoteLengthIn;
+      prevNote = prevNoteIn;
     }
     public PatternEntity[] template;
     public int curIndex;
     public int unitNoteLength;
+    public NoteEvent prevNote;
   }
 }

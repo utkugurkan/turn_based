@@ -5,9 +5,11 @@ final EffectMethod[] ENFORCED_EFFECTS = {
   new EffectTonalityEnforcer()};
 
 final EffectMethod[] EFFECTS = {
-    new EffectTransposePitch(),
-    new EffectDynamicRange(),
-    new EffectStaccato()};
+    new EffectIdentity(),
+    //new EffectTransposePitch(),
+    //new EffectDynamicRange(),
+    //new EffectStaccato()
+};
 
 void applyAllEnforcedEffects(NoteEvent[] seed) {
   for (EffectMethod effect : ENFORCED_EFFECTS) {
