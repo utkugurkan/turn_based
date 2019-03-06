@@ -152,8 +152,8 @@ class GenMelody extends GenerationMethod {
   //}
   
   // TODO: Incorporate directions.
-  //private static final int DIRECTIONAL_CONFIDENCE_INITIAL_MIN;
-  //private static final int DIRECTIONAL_CONFIDENCE_INITIAL_MAX;
+  private static final int DIRECTIONAL_CONFIDENCE_INITIAL_MIN = 3;
+  private static final int DIRECTIONAL_CONFIDENCE_INITIAL_MAX = 12;
   
   //private static final float PREVIOUS_INTERVAL_SELECTION_CHANCE;
   //private static final int MAX_REPEATABLE_INTERVAL;
@@ -212,8 +212,16 @@ class GenMelody extends GenerationMethod {
       return null;
     }
     
+    // True: going up. False: going down.
+    boolean direction;
+    if (random(1.0f) < 0.5) {
+      direction = true;
+    }
+    else {
+      direction = false;
+    }
+    int curDirectionalConfidence = 0;
     while (curLength < templateLength) {
-      
       if (dominantFractionDurationLeft <= 0) {
         int noteLengthIndexMean = int(map(
           pieceState.speed.getValue(), 
@@ -231,11 +239,20 @@ class GenMelody extends GenerationMethod {
         dominantFractionDurationLeft = int(random(MIN_DOMINANT_FRACTION_LENGTH, MAX_DOMINANT_FRACTION_LENGTH + 0.5));
       }
       
+      if (curDirectionalConfidence <= 0) {
+        direction = !direction;
+        curDirectionalConfidence = int(random(DIRECTIONAL_CONFIDENCE_INITIAL_MIN, DIRECTIONAL_CONFIDENCE_INITIAL_MAX + 0.5));
+      }
+      
       int pitchVariance = int(randomTruncatedGaussian(
         MIN_PITCH_VARIATION_BETWEEN_NOTES,
         MAX_PITCH_VARIATION_BETWEEN_NOTES, 
         PITCH_VARIATION_MEAN, 
         PITCH_VARIATION_STANDARD_DEVIATION));
+      if ( (direction && pitchVariance < 0) || (!direction && pitchVariance > 0) ) {
+        pitchVariance *= -1;
+      }
+      curDirectionalConfidence -= abs(pitchVariance);
         
       pattern.add(new PatternEntity(pitchVariance, dominantFractionIndex));
       curLength += unitNoteLength * ALLOWABLE_FRACTIONS[dominantFractionIndex];
