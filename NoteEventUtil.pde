@@ -53,15 +53,22 @@ int calculatePitch(Key key, int octave) {
 }
 
 Key calculateKey(NoteEvent note) {
+  return calculateKey(note.getPitch());
+}
+
+Key calculateKey(int pitch) {
   //print("Debug calculateKey: ");
   //printNoteEvent(note);
-  return Key.values()[(note.getPitch() - MIN_MIDI_NOTE) % 12];
+  return Key.values()[(pitch - MIN_MIDI_NOTE) % 12];
 }
 
 // Return the pitch number of the closest pitch of key to note.
 int getClosestPitch(Key key, NoteEvent note) {
-  
-  int referencePitch = note.getPitch();
+  return getClosestPitch(key, note.getPitch());
+}
+
+// Return the pitch number of the closest pitch of key to reference pitch.
+int getClosestPitch(Key key, int referencePitch) {
   int octave = 0;
   int pitch = calculatePitch(key, octave);
   int closestPitch = 0; // Not a valid number, and farther than an octave from every valid note.
@@ -75,4 +82,12 @@ int getClosestPitch(Key key, NoteEvent note) {
   }
   
   return closestPitch;
+}
+
+TreeMap<Integer, NoteEvent> getStartTimeOrderedMap(NoteEvent[] seed) {
+  TreeMap<Integer, NoteEvent> res = new TreeMap<Integer, NoteEvent>();
+  for (int i = 0; i < seed.length; ++i) {
+    res.put(seed[i].getStartTime(), seed[i]);
+  }
+  return res;
 }

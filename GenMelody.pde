@@ -32,6 +32,7 @@ class GenMelody extends GenerationMethod {
     _maxRecommendedNumberOfGenerations = MAX_RECOMMENDED_NUMBER_OF_GENERATIONS;
   }
   
+  private static final int MAX_SEED_PITCH_USAGE_DISTANCE = 20; // in ms.
   @Override
   NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     println("Generating melody.");
@@ -59,6 +60,7 @@ class GenMelody extends GenerationMethod {
     // as well as where we are in the harmonized seed.
     int curTime = 0;
     
+    TreeMap<Integer, NoteEvent> startTimeToSeedNote = getStartTimeOrderedMap(seed);
     
     while (curTime < endTime) {
       // Set to a random reference point to start a new melodic line.
@@ -75,6 +77,19 @@ class GenMelody extends GenerationMethod {
       int duration = int(ALLOWABLE_FRACTIONS[fractionIndex] * unitNoteLength);
       if (!template[curIndex].isRest) {
         int newPitch = lastNote.getPitch() + template[curIndex].pitchDiff;
+        // If possible, try to use a pitch from the seed that is approximately at this time.
+        Map.Entry<Integer, NoteEvent> lowerBound = startTimeToSeedNote.floorEntry(curTime);
+        if (lowerBound != null && abs(lowerBound.getKey() - curTime) < MAX_SEED_PITCH_USAGE_DISTANCE) {
+          newPitch = getClosestPitch(calculateKey(lowerBound.getValue()), newPitch);
+          println("USING SEED NOTE IN MELODYYY");
+        }
+        else {
+          Map.Entry<Integer, NoteEvent> upperBound = startTimeToSeedNote.ceilingEntry(curTime);
+          if (upperBound != null && abs(upperBound.getKey() - curTime) < MAX_SEED_PITCH_USAGE_DISTANCE) {
+            println("USING SEED NOTE IN MELODYYY");
+          }
+        }
+        
         lastNote = new NoteEvent(newPitch, int(random(NoteEvent.VELOCITY_MIN, NoteEvent.VELOCITY_MAX)), curTime, duration);
         gen.add(lastNote);
       }
