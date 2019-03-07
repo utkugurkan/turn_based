@@ -28,12 +28,13 @@ public class PieceState {
     
     speed.print();
     loudness.print();
+    tonality.print();
   }
   
   public void update() {
     for (StateProperty prop : _properties) {
       if (prop.reachedResetCondition()) {
-        println("Resetting!!!!!!");
+        println("Resetting property " + prop.getName() + ".");
         resetProperty(prop);
       } else {
         prop.update();
@@ -49,6 +50,7 @@ public class PieceState {
     //speed.setValue(1.0f);
     speed.print();
     loudness.print();
+    tonality.print();
   }
   
   public void resetProperty(StateProperty prop) {

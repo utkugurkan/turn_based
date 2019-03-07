@@ -1,4 +1,4 @@
-final int GENERATOR_COUNT = 1;
+final int GENERATOR_COUNT = 4;
 
 class Model {  
   public Model() {
@@ -121,6 +121,7 @@ class Model {
       for (Generator gen : _generators) {
         gen.dropStateData();
       }
+      _turnCountSinceSeedReset = 0;
       return generateNewSeed();
     }
     
@@ -154,8 +155,11 @@ class Model {
     NoteEvent[] seedResultArr = new NoteEvent[resultList.size()];
     resultList.toArray(seedResultArr);
     
+    // Increment the number of turns
+    ++_turnCountSinceSeedReset;
+    
     println();
-    println("New seed: ");
+    println("New seed: (turns since last reset is " + _turnCountSinceSeedReset + ") ");
     printNoteEvents(seedResultArr);
     
     return seedResultArr;
@@ -186,8 +190,15 @@ class Model {
     return seed;
   }
   
+  private static final int TURN_COUNT_BEFORE_SEED_RECONSIDERATION = 15;
+  // The probability of resetting the seed after the above threshold count will increase
+  // by this much each turn.
+  private static final float RECONSIDERATION_SEED_RESET_PROBABILITY_INCREASE_RATE = 0.05;
   private boolean needNewSeed(NoteEvent[] seed) {
-    return seedHasExtremeLocalization(seed);
+    return seedHasExtremeLocalization(seed) || 
+      (_turnCountSinceSeedReset > TURN_COUNT_BEFORE_SEED_RECONSIDERATION && 
+      (_turnCountSinceSeedReset - TURN_COUNT_BEFORE_SEED_RECONSIDERATION) * 
+      RECONSIDERATION_SEED_RESET_PROBABILITY_INCREASE_RATE > random(1.0f));
   }
   
   // If too many notes are too close to one another, return true.
@@ -230,5 +241,6 @@ class Model {
   private static final float ADDITION_TO_SEED_ODDS = 0.4f;
   
   private int _turnEndTime;
+  private int _turnCountSinceSeedReset = 0;
   private Generator[] _generators;
 }

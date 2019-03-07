@@ -1,17 +1,17 @@
 import java.lang.Object;
 
 final GenerationMethod[] GEN_METHODS = {
-    //new GenAddOctaves(),
-    //new GenAddRandomPitchOffset(),
-    ////new GenFillBetweenNotes(),
-    //new GenEmpty(),
-    //new GenIdentity(),
-    //new GenDisplaced(),
-    //new GenRedistributeSeedContent(),
-    //new GenForestAccompaniment(),
-    //new GenHarmony(),
+    new GenAddOctaves(),
+    new GenAddRandomPitchOffset(),
+    //new GenFillBetweenNotes(),
+    new GenEmpty(),
+    new GenIdentity(),
+    new GenDisplaced(),
+    new GenRedistributeSeedContent(),
+    new GenForestAccompaniment(),
+    new GenHarmony(),
     new GenMelody(),
-    //new GenAccompanimentPattern()
+    new GenAccompanimentPattern()
 };
 
 //final Class[] GEN_METHOD_TYPES = {

@@ -35,6 +35,10 @@ public class StateProperty {
     _updateCountAtTarget = 0;
   }
   
+  public String getName() {
+    return _name;
+  }
+  
   public boolean reachedResetCondition() {
     return _currentValue == _targetValue && _updateCountAtTarget >= _updateCountToReset;
   }
