@@ -48,6 +48,9 @@ class GenMelody extends GenerationMethod {
     }
     PatternEntity[] template = templateState.template;
     int curIndex = templateState.curIndex;
+    if (curIndex >= template.length) {
+      curIndex = 0;
+    }
     int unitNoteLength = templateState.unitNoteLength;
     NoteEvent lastNote = templateState.prevNote;
    
@@ -56,23 +59,26 @@ class GenMelody extends GenerationMethod {
     // as well as where we are in the harmonized seed.
     int curTime = 0;
     
+    
     while (curTime < endTime) {
       // Set to a random reference point to start a new melodic line.
       if (curIndex == 0) {
         lastNote = new NoteEvent(calculatePitch(getRandomKey(), int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), 40, 0, 0);
       }
+      //println("Template length is " + template.length + " and curIndex is " + curIndex);
       int fractionIndex = template[curIndex].length;
       
       //NoteEvent[] harmNotes = harmonyController.getHarmonyAtTime(curTime);
       //int harmIndex = int(random(harmNotes.length));
       //int newPitch = getClosestPitch(calculateKey(harmNotes[harmIndex]), lastNote);
-      
-      int newPitch = lastNote.getPitch() + template[curIndex].pitchDiff;
-      
-      
+  
       int duration = int(ALLOWABLE_FRACTIONS[fractionIndex] * unitNoteLength);
-      lastNote = new NoteEvent(newPitch, int(random(NoteEvent.VELOCITY_MIN, NoteEvent.VELOCITY_MAX)), curTime, duration);
-      gen.add(lastNote);
+      if (!template[curIndex].isRest) {
+        int newPitch = lastNote.getPitch() + template[curIndex].pitchDiff;
+        lastNote = new NoteEvent(newPitch, int(random(NoteEvent.VELOCITY_MIN, NoteEvent.VELOCITY_MAX)), curTime, duration);
+        gen.add(lastNote);
+      }
+      
       curTime += duration;
       curIndex = (curIndex + 1) % template.length;
     }
@@ -163,16 +169,17 @@ class GenMelody extends GenerationMethod {
   private static final int MIN_DOMINANT_FRACTION_LENGTH = 1;
   private static final int MAX_DOMINANT_FRACTION_LENGTH = 8;
   
-  private static final int MIN_PITCH_VARIATION_BETWEEN_NOTES = -12;
-  private static final int MAX_PITCH_VARIATION_BETWEEN_NOTES = +12;
+  private static final int MIN_PITCH_VARIATION_BETWEEN_NOTES = 0;
+  private static final int MAX_PITCH_VARIATION_BETWEEN_NOTES = +14;
   private static final float PITCH_VARIATION_STANDARD_DEVIATION = 4f;
-  private static final float PITCH_VARIATION_MEAN = 0f;
+  private static final float PITCH_VARIATION_MEAN = 3f;
   
   // Current thoughts and methodology:
   // Determine a "dominant" note length (or fraction) to be used for a certain amount of time.
   private TemplateState genMelodyTemplate(int seedLength, DataPacketSet dataSet) {
     TemplateState template = unpackData(dataSet);
     if (template != null) {
+      modifyTemplate(template);
       return template;
     }
     println("ATTN!! Generating new melody template");
@@ -244,17 +251,18 @@ class GenMelody extends GenerationMethod {
         curDirectionalConfidence = int(random(DIRECTIONAL_CONFIDENCE_INITIAL_MIN, DIRECTIONAL_CONFIDENCE_INITIAL_MAX + 0.5));
       }
       
+      // The result will be >= 0 by default
       int pitchVariance = int(randomTruncatedGaussian(
         MIN_PITCH_VARIATION_BETWEEN_NOTES,
         MAX_PITCH_VARIATION_BETWEEN_NOTES, 
         PITCH_VARIATION_MEAN, 
         PITCH_VARIATION_STANDARD_DEVIATION));
-      if ( (direction && pitchVariance < 0) || (!direction && pitchVariance > 0) ) {
+      if (!direction) {
         pitchVariance *= -1;
       }
       curDirectionalConfidence -= abs(pitchVariance);
         
-      pattern.add(new PatternEntity(pitchVariance, dominantFractionIndex));
+      pattern.add(new PatternEntity(pitchVariance, dominantFractionIndex, false));
       curLength += unitNoteLength * ALLOWABLE_FRACTIONS[dominantFractionIndex];
       --dominantFractionDurationLeft;
     }
@@ -270,6 +278,77 @@ class GenMelody extends GenerationMethod {
     return new TemplateState(pattern.toArray(patternArr), 0, unitNoteLength, startingNote);
   }
   
+  private static final float TEMPLATE_MODIFICATION_PROBABILITY = 0.4;
+  private static final float MIN_UNIT_NOTE_FRACTION_TO_MODIFY = 0.5f;
+  private static final float MAX_UNIT_NOTE_FRACTION_TO_MODIFY = 4f;
+  private void modifyTemplate(TemplateState templateState) {
+    if (random(1.0f) > TEMPLATE_MODIFICATION_PROBABILITY) {
+      return;
+    }
+
+    println("Modifying template.");
+    int durationToModify = int(random(MIN_UNIT_NOTE_FRACTION_TO_MODIFY, MAX_UNIT_NOTE_FRACTION_TO_MODIFY) * templateState.unitNoteLength);
+    float fractionToModify = (float)durationToModify / templateState.unitNoteLength;
+    PatternEntity[] template = templateState.template;
+    
+    int indexSourceIt = int(random(template.length));
+    int indexSourceEnd = template.length;
+    float coveredFraction = 0f;
+    
+    ArrayList<PatternEntity> toReplace = new ArrayList<PatternEntity>();
+    while (coveredFraction < fractionToModify && indexSourceIt < indexSourceEnd) {
+      float remainingFraction = fractionToModify - coveredFraction;
+      PatternEntity newEntity = new PatternEntity(template[indexSourceIt]);
+      
+      if (ALLOWABLE_FRACTIONS[newEntity.length] > remainingFraction) {
+        // If necessary, shorten the entity to an allowable fraction.
+        int fittingNoteFractionIndex = getLowerBoundFractionIndex(remainingFraction);
+        if (fittingNoteFractionIndex != -1) {
+          newEntity.length = fittingNoteFractionIndex;
+          toReplace.add(newEntity);
+          remainingFraction -= ALLOWABLE_FRACTIONS[fittingNoteFractionIndex];
+        }
+
+        // If there is a gap, fill with rests.
+        appendRestForFraction(toReplace, remainingFraction);
+        coveredFraction = fractionToModify;
+      }
+      else {
+        toReplace.add(newEntity);
+        coveredFraction += ALLOWABLE_FRACTIONS[newEntity.length];
+        ++indexSourceIt;
+      }
+    }
+    
+    coveredFraction = 0f;
+    int indexDestStart = int(random(template.length));
+    int indexDestIt = indexDestStart;
+    int indexDestEnd = template.length;
+    while (coveredFraction < fractionToModify && indexDestIt < indexDestEnd) {
+      coveredFraction += ALLOWABLE_FRACTIONS[template[indexDestIt].length];
+      ++indexDestIt;
+    }
+    
+    float exceedingRemovalFraction = coveredFraction - fractionToModify;
+    if (exceedingRemovalFraction > 0) {
+      appendRestForFraction(toReplace, exceedingRemovalFraction);
+    }
+    
+    // Form the result template.
+    ArrayList<PatternEntity> resultTemplate = new ArrayList<PatternEntity>();
+    for (int i = 0; i < indexDestStart; ++i) {
+      resultTemplate.add(template[i]);
+    }
+    for (int i = 0; i < toReplace.size(); ++i) {
+      resultTemplate.add(toReplace.get(i));
+    }
+    for (int i = indexDestIt; i < template.length; ++i) {
+      resultTemplate.add(template[i]);
+    }
+    
+    PatternEntity[] patternArr = new PatternEntity[resultTemplate.size()];
+    templateState.template = resultTemplate.toArray(patternArr);
+  }
   
   private TemplateState unpackData(DataPacketSet dataSet) {
     DataPacket[] data = dataSet.data;
@@ -281,7 +360,8 @@ class GenMelody extends GenerationMethod {
       int unitNoteLength = (int)data[2].value;
       NoteEvent prevNote = (NoteEvent)data[3].value;
       return new TemplateState(template, curIndex, unitNoteLength, prevNote);
-    } else {
+    }
+    else {
       return null;
     }
   }
@@ -294,10 +374,37 @@ class GenMelody extends GenerationMethod {
     dataSet.data[3] = new DataPacket(templateState.prevNote);
   }
   
-  private static final int MIN_SEED_LENGTH_MULTIPLIER = 2;
-  private static final int MAX_SEED_LENGTH_MULTIPLIER = 12;
+  private static final int MIN_SEED_LENGTH_MULTIPLIER = 1;
+  private static final int MAX_SEED_LENGTH_MULTIPLIER = 4;
   private int calculateTemplateLength(int seedLength) {
     return seedLength * int(random(MIN_SEED_LENGTH_MULTIPLIER, MAX_SEED_LENGTH_MULTIPLIER + 0.5)); 
+  }
+  
+  // Return -1 if no fitting is found.
+  private int getLowerBoundFractionIndex(float fraction) {
+    int largestFittingFactorIndex = -1;
+    for (int i = 0; i < ALLOWABLE_FRACTIONS.length; ++i) {
+      if (ALLOWABLE_FRACTIONS[i] < fraction) {
+        largestFittingFactorIndex = i;
+        break;
+      }
+    }
+    return largestFittingFactorIndex;
+  }
+  
+  private void appendRestForFraction(ArrayList<PatternEntity> line, float remainingFraction) {
+    while (remainingFraction > 0f) {
+      int largestFittingFactorIndex = getLowerBoundFractionIndex(remainingFraction);
+      if (largestFittingFactorIndex != -1) {
+        PatternEntity restEntity = new PatternEntity(0, largestFittingFactorIndex, true);
+        line.add(restEntity);
+        remainingFraction -= ALLOWABLE_FRACTIONS[largestFittingFactorIndex];
+      }
+      else {
+        println("ERROR: Could not fit rests in melody template modification. Remaining fraction is " + remainingFraction);
+        break;
+      }
+    }
   }
   
   private class TemplateState {

@@ -118,6 +118,9 @@ class Model {
     
     if (needNewSeed(seed)) {
       println("Resetting seed!!");
+      for (Generator gen : _generators) {
+        gen.dropStateData();
+      }
       return generateNewSeed();
     }
     

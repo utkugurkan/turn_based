@@ -167,7 +167,7 @@ class GenAccompanimentPattern extends GenerationMethod {
         PITCH_VARIATION_MEAN, 
         PITCH_VARIATION_STANDARD_DEVIATION));
         
-      pattern.add(new PatternEntity(pitchVariance, noteLength));
+      pattern.add(new PatternEntity(pitchVariance, noteLength, false));
       curLength += noteLength;
     }
     

@@ -63,6 +63,10 @@ class Generator {
     return genResult;
   }
   
+  public void dropStateData() {
+    _genMethodState = new DataPacketSet();
+  }
+  
   private void resetState() {
     _busy = false;
     _jobFinishTime = 0;

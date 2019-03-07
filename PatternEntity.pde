@@ -1,7 +1,12 @@
 public class PatternEntity {
-  public PatternEntity(int pitchIn, int lengthIn) {
+  public PatternEntity(int pitchIn, int lengthIn, boolean isRestIn) {
     pitchDiff = pitchIn;
     length = lengthIn;
+    isRest = isRestIn;
+  }
+  
+  public PatternEntity(PatternEntity other) {
+    this(other.pitchDiff, other.length, other.isRest);
   }
   
   public void print() {
@@ -11,4 +16,6 @@ public class PatternEntity {
   // Set to 0 for the first note.
   public int pitchDiff;
   public int length; // in terms of unit note.
+  public boolean isRest; // Indicates silent portions.
+  
 }
