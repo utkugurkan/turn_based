@@ -81,12 +81,12 @@ class GenMelody extends GenerationMethod {
         Map.Entry<Integer, NoteEvent> lowerBound = startTimeToSeedNote.floorEntry(curTime);
         if (lowerBound != null && abs(lowerBound.getKey() - curTime) < MAX_SEED_PITCH_USAGE_DISTANCE) {
           newPitch = getClosestPitch(calculateKey(lowerBound.getValue()), newPitch);
-          println("USING SEED NOTE IN MELODYYY");
+          //println("USING SEED NOTE IN MELODYYY");
         }
         else {
           Map.Entry<Integer, NoteEvent> upperBound = startTimeToSeedNote.ceilingEntry(curTime);
           if (upperBound != null && abs(upperBound.getKey() - curTime) < MAX_SEED_PITCH_USAGE_DISTANCE) {
-            println("USING SEED NOTE IN MELODYYY");
+            //println("USING SEED NOTE IN MELODYYY");
           }
         }
         
@@ -416,7 +416,7 @@ class GenMelody extends GenerationMethod {
         remainingFraction -= ALLOWABLE_FRACTIONS[largestFittingFactorIndex];
       }
       else {
-        println("ERROR: Could not fit rests in melody template modification. Remaining fraction is " + remainingFraction);
+        //println("ERROR: Could not fit rests in melody template modification. Remaining fraction is " + remainingFraction);
         break;
       }
     }

@@ -1,4 +1,4 @@
-final int GENERATOR_COUNT = 4;
+final int GENERATOR_COUNT = 1;
 
 class Model {  
   public Model() {
@@ -106,6 +106,10 @@ class Model {
         // Store the result.
         allGenResults.add(genResult);
       }
+    }
+    
+    if (metronome_on) {
+      allGenResults.add(rhythmController.getMetronomeNotesForSeed(seed));
     }
     
     return allGenResults;
