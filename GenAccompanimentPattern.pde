@@ -32,7 +32,7 @@ class GenAccompanimentPattern extends GenerationMethod {
   }
 
   @Override
-    NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
+  NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
     println("Generating accompaniment pattern.");
 
     int shortestNoteDuration = int(map(
@@ -44,10 +44,19 @@ class GenAccompanimentPattern extends GenerationMethod {
     //println("shortestNoteDuration: " + shortestNoteDuration);
 
     //int patternLength = int(random(MIN_PATTERN_LENGTH, MAX_PATTERN_LENGTH));
-    PatternEntity[] pattern = calculatePattern(dataSet);
+    TemplateState templateState = calculatePattern(dataSet);
+    
+    if (templateState == null) {
+      return new NoteEvent[0];
+    }
+    PatternEntity[] pattern = templateState.template;
+    int curIndex = templateState.curIndex;
+    if (curIndex >= pattern.length) {
+      curIndex = 0;
+    }
+    NoteEvent curNote = templateState.prevNote;
 
     int curTime = 0;
-    int patternIndex = 0;
     int seedTime = getEndTime(seed);
     
     int defaultVelocity = int(map(
@@ -57,26 +66,21 @@ class GenAccompanimentPattern extends GenerationMethod {
       NoteEvent.VELOCITY_MIN,
       NoteEvent.VELOCITY_MAX));
     int patternBeginningVelocity = defaultVelocity + 5;
-    
-    NoteEvent curNote = new NoteEvent(
-      Key.A, 
-      int(random(MIN_STARTING_OCTAVE, MAX_STARTING_OCTAVE)),
-      0,
-      0,
-      0);
       
     ArrayList<NoteEvent> gen = new ArrayList<NoteEvent>();
     while (curTime < seedTime) {
+      //println(curIndex);
       int thisVelocity = defaultVelocity;
-      if (patternIndex == 0) {
+      if (curIndex == 0) {
         thisVelocity = patternBeginningVelocity;
+        curNote = getNewStartingNote();
       }
       // Create the new note with a potentially temporary pitch.
       NoteEvent newNote = new NoteEvent(
-        calculatePitchInRange(curNote.getPitch(), pattern[patternIndex].pitchDiff),
+        calculatePitchInRange(curNote.getPitch(), pattern[curIndex].pitchDiff),
         thisVelocity,
         curTime,
-        pattern[patternIndex].length * shortestNoteDuration);
+        pattern[curIndex].length * shortestNoteDuration);
         
       // Move the new note's pitch to a pitch from the current harmony.
       // Pick from harmony the closest possible pitch.
@@ -100,36 +104,37 @@ class GenAccompanimentPattern extends GenerationMethod {
       }
       int newPitch = adjustPitch(newNote.getPitch() + closestPitchDiff);
       newNote.setPitch(newPitch);
-      //printNoteEvent(newNote);
-      
       
       gen.add(newNote);
       curNote = newNote;
       curTime += newNote.getDuration();
-      patternIndex = (patternIndex + 1) % pattern.length;
+      curIndex = (curIndex + 1) % pattern.length;
     }
 
-    setData(dataSet, pattern);
+    TemplateState newTemplateState = new TemplateState(pattern, curIndex, 0, curNote);
+    saveData(dataSet, newTemplateState);
+    
     NoteEvent[] genArr = new NoteEvent[gen.size()];
     return gen.toArray(genArr);
   }
-
+  
+  private TemplateState calculatePattern(DataPacketSet dataSet) {
+    if (random(1f) < PATTERN_CHANGE_PROBABILITY) {
+      return genNewPattern();
+    }
+    
+    TemplateState template = unpackData(dataSet);
+    if (template != null) {
+      return template;
+    }
+    return genNewPattern();
+      
+  }
+  
   private static final float NOTE_LENGTH_BASE_STANDARD_DEVIATION = 0.5f;
   private static final float PITCH_VARIATION_STANDARD_DEVIATION = 6f;
   private static final float PITCH_VARIATION_MEAN = 0f;
-  private PatternEntity[] calculatePattern(DataPacketSet dataSet) {
-    DataPacket[] data = dataSet.data;
-    if (data != null && data.length > 0 && data[0].type == PatternEntity[].class &&
-      random(1f) > PATTERN_CHANGE_PROBABILITY) {
-      println("Using the same pattern.");
-      return (PatternEntity[])data[0].value;
-    } else {
-      println("Not using the same pattern.");
-      if (data != null && data.length > 0) {
-        println("Data type: " + data[0].type);
-      }
-    }
-    
+  private TemplateState genNewPattern() {
     int patternLength = int(random(MIN_PATTERN_LENGTH, MAX_PATTERN_LENGTH));
     
     ArrayList<PatternEntity> pattern = new ArrayList<PatternEntity>();
@@ -178,16 +183,85 @@ class GenAccompanimentPattern extends GenerationMethod {
       ent.print();
     }
     
+    NoteEvent startingNote = getNewStartingNote();
     PatternEntity[] patternArr = new PatternEntity[pattern.size()];
-    return pattern.toArray(patternArr);
+    return new TemplateState(pattern.toArray(patternArr), 0, 0, startingNote);
   }
+
+  //private static final float NOTE_LENGTH_BASE_STANDARD_DEVIATION = 0.5f;
+  //private static final float PITCH_VARIATION_STANDARD_DEVIATION = 6f;
+  //private static final float PITCH_VARIATION_MEAN = 0f;
+  //private PatternEntity[] calculatePattern(DataPacketSet dataSet) {
+  //  DataPacket[] data = dataSet.data;
+  //  if (data != null && data.length > 0 && data[0].type == PatternEntity[].class &&
+  //    random(1f) > PATTERN_CHANGE_PROBABILITY) {
+  //    println("Using the same pattern.");
+  //    return (PatternEntity[])data[0].value;
+  //  } else {
+  //    println("Not using the same pattern.");
+  //    if (data != null && data.length > 0) {
+  //      println("Data type: " + data[0].type);
+  //    }
+  //  }
+    
+  //  //int patternLength = int(random(MIN_PATTERN_LENGTH, MAX_PATTERN_LENGTH));
+    
+  //  //ArrayList<PatternEntity> pattern = new ArrayList<PatternEntity>();
+  //  //int curLength = 0;
+  //  //while (curLength < patternLength) {
+  //  //  float minVal = MIN_PATTERN_ELEMENT_LENGTH;
+  //  //  float maxVal = min(patternLength - curLength, MAX_PATTERN_ELEMENT_LENGTH) + 0.5;
+      
+  //  //  float noteLengthMean = map(
+  //  //    pieceState.speed.getValue(), 
+  //  //    pieceState.speed.MIN_VAL,
+  //  //    pieceState.speed.MAX_VAL,
+  //  //    maxVal,
+  //  //    minVal);
+        
+  //  //  //println("Note length mean: " + noteLengthMean);
+      
+  //  //  // The farther the speed is from the average speed, the smaller the standard deviation is.
+  //  //  float speedPropMean = (pieceState.speed.MAX_VAL - pieceState.speed.MIN_VAL) / 2f;
+  //  //  float speedDiffFromMeanSpeed = abs(speedPropMean - pieceState.speed.getValue());
+  //  //  float noteLengthStdDev = map(
+  //  //    speedDiffFromMeanSpeed,
+  //  //    speedPropMean,
+  //  //    0f,
+  //  //    0f,
+  //  //    NOTE_LENGTH_BASE_STANDARD_DEVIATION);
+  //  //  //println("Standard dev: " + noteLengthStdDev);
+      
+  //  //  int noteLength = int(randomTruncatedGaussian(minVal, maxVal, noteLengthMean, noteLengthStdDev));
+  //  //  //int noteLength = 1;
+  //  //  //println("Note length: " + noteLength);
+      
+  //  //  int pitchVariance = int(randomTruncatedGaussian(
+  //  //    MIN_PITCH_VARIATION_BETWEEN_NOTES,
+  //  //    MAX_PITCH_VARIATION_BETWEEN_NOTES, 
+  //  //    PITCH_VARIATION_MEAN, 
+  //  //    PITCH_VARIATION_STANDARD_DEVIATION));
+      
+  //  //  pattern.add(new PatternEntity(pitchVariance, noteLength, false));
+  //  //  curLength += noteLength;
+  //  //}
+    
+  //  //println("Generated pattern length: " + pattern.size());
+  //  //print("Generated pattern: ");
+  //  //for (PatternEntity ent : pattern) {
+  //  //  ent.print();
+  //  //}
+    
+  //  //PatternEntity[] patternArr = new PatternEntity[pattern.size()];
+  //  //return pattern.toArray(patternArr);
+  //}
   
-  // Sets the state data that was passed in
-  // to the generation method.
-  private void setData(DataPacketSet dataSet, PatternEntity[] pattern) {
-    dataSet.data = new DataPacket[1];
-    dataSet.data[0] = new DataPacket(pattern);
-  }
+  //// Sets the state data that was passed in
+  //// to the generation method.
+  //private void setData(DataPacketSet dataSet, PatternEntity[] pattern) {
+  //  dataSet.data = new DataPacket[1];
+  //  dataSet.data[0] = new DataPacket(pattern);
+  //}
   
   // Use this function to get the pitch to use, given the pitch of the previous note
   // as well as the pitch difference as determined by the pattern.
@@ -216,5 +290,38 @@ class GenAccompanimentPattern extends GenerationMethod {
     }
     
     return pitch;
+  }
+  
+  private TemplateState unpackData(DataPacketSet dataSet) {
+    DataPacket[] data = dataSet.data;
+    if (data != null && data.length >= 3 && data[0].type == PatternEntity[].class &&
+      data[1].type == Integer.class && data[2].type == NoteEvent.class) {
+        
+      println("Using the same pattern.");
+      PatternEntity[] template = (PatternEntity[])data[0].value;
+      int curIndex = (int)data[1].value;
+      NoteEvent prevNote = (NoteEvent)data[2].value;
+      
+      // We don't use the third parameter here, which is the unit note length,
+      // since it's calculated each time.
+      return new TemplateState(template, curIndex, 0, prevNote);
+    }
+    else {
+      println("Not using the same pattern.");
+      return null;
+    }
+  }
+  
+  // Sets the state data that was passed in
+  // to the generation method.
+  private void saveData(DataPacketSet dataSet, TemplateState templateState) {
+    dataSet.data = new DataPacket[3];
+    dataSet.data[0] = new DataPacket(templateState.template);
+    dataSet.data[1] = new DataPacket(templateState.curIndex);
+    dataSet.data[2] = new DataPacket(templateState.prevNote);
+  }
+  
+  private NoteEvent getNewStartingNote() {
+    return new NoteEvent(calculatePitch(getRandomKey(), int(random(MIN_STARTING_OCTAVE, MAX_STARTING_OCTAVE + 0.5))), 40, 0, 0);
   }
 }
