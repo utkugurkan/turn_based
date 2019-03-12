@@ -1,10 +1,11 @@
-final int GENERATOR_COUNT = 1;
+final int MIN_GENERATOR_COUNT = 2;
+final int MAX_GENERATOR_COUNT = 4;
 
 class Model {  
   public Model() {
     _turnEndTime = 0;
     
-    _generators = new Generator[GENERATOR_COUNT];
+    _generators = new Generator[MAX_GENERATOR_COUNT];
     for (int i = 0; i < _generators.length; ++i) {
       _generators[i] = new Generator();
     }
@@ -87,8 +88,19 @@ class Model {
     
     ArrayList<NoteEvent[]> allGenResults = new ArrayList<NoteEvent[]>();
     
+    // Determine number of generators to use for the turn.
+    int numGen = min(
+      int(map(
+        pieceState.noteDensity.getValue(),
+        StateProperty.MIN_VAL, 
+        StateProperty.MAX_VAL,
+        float(MIN_GENERATOR_COUNT),
+        float(MAX_GENERATOR_COUNT) + 0.5f)),
+      _generators.length);
+    println("Using " + numGen + " generators.");
+    
     // Pass on to generators and apply effects.
-    for (int i = 0; i < _generators.length; ++i) {
+    for (int i = 0; i < numGen; ++i) {
       Generator gen = _generators[i];
       if (gen.isAvailable()) {
         NoteEvent[] genResult = gen.generate(seed);

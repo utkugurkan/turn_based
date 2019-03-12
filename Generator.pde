@@ -1,16 +1,16 @@
 import java.lang.Object;
 
 final GenerationMethod[] GEN_METHODS = {
-    //new GenAddOctaves(),
-    //new GenAddRandomPitchOffset(),
-    ////new GenFillBetweenNotes(),
-    //new GenEmpty(),
-    //new GenIdentity(),
-    ////new GenDisplaced(),
-    ////new GenRedistributeSeedContent(),
-    //new GenForestAccompaniment(),
-    //new GenHarmony(),
-    //new GenMelody(),
+    new GenAddOctaves(),
+    new GenAddRandomPitchOffset(),
+    //new GenFillBetweenNotes(),
+    new GenEmpty(),
+    new GenIdentity(),
+    //new GenDisplaced(),
+    //new GenRedistributeSeedContent(),
+    new GenForestAccompaniment(),
+    new GenHarmony(),
+    new GenMelody(),
     new GenAccompanimentPattern()
 };
 
