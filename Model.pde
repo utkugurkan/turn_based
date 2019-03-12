@@ -88,12 +88,13 @@ class Model {
     ArrayList<NoteEvent[]> allGenResults = new ArrayList<NoteEvent[]>();
     
     // Pass on to generators and apply effects.
-    for (Generator gen : _generators) {
+    for (int i = 0; i < _generators.length; ++i) {
+      Generator gen = _generators[i];
       if (gen.isAvailable()) {
         NoteEvent[] genResult = gen.generate(seed);
         // Quantize into rhythm if necessary.
         if (rhythmController.isEnabled()) {
-          genResult = rhythmController.quantize(genResult);
+          genResult = rhythmController.quantize(genResult, i);
         }
         // Apply enforced effects.
         applyAllEnforcedEffects(genResult);

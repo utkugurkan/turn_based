@@ -98,7 +98,8 @@ class GenAccompanimentPattern extends GenerationMethod {
           closestPitchDiff = thisPitchDiff;
         }
       }
-      newNote.setPitch(newNote.getPitch() + closestPitchDiff);
+      int newPitch = adjustPitch(newNote.getPitch() + closestPitchDiff);
+      newNote.setPitch(newPitch);
       //printNoteEvent(newNote);
       
       
@@ -166,16 +167,16 @@ class GenAccompanimentPattern extends GenerationMethod {
         MAX_PITCH_VARIATION_BETWEEN_NOTES, 
         PITCH_VARIATION_MEAN, 
         PITCH_VARIATION_STANDARD_DEVIATION));
-        
+      
       pattern.add(new PatternEntity(pitchVariance, noteLength, false));
       curLength += noteLength;
     }
     
-    //println("Generated pattern length: " + pattern.size());
-    //print("Generated pattern: ");
-    //for (PatternEntity ent : pattern) {
-    //  ent.print();
-    //}
+    println("Generated pattern length: " + pattern.size());
+    print("Generated pattern: ");
+    for (PatternEntity ent : pattern) {
+      ent.print();
+    }
     
     PatternEntity[] patternArr = new PatternEntity[pattern.size()];
     return pattern.toArray(patternArr);
@@ -203,5 +204,17 @@ class GenAccompanimentPattern extends GenerationMethod {
       suggestedPitch += PITCH_RANGE_FIT_FACTOR;
     }
     return suggestedPitch;
+  }
+  
+  private int adjustPitch(int pitch) {
+    while (pitch > NoteEvent.PITCH_MAX) {
+      pitch -= 12;
+    }
+    
+    while (pitch < NoteEvent.PITCH_MIN) {
+      pitch += 12;
+    }
+    
+    return pitch;
   }
 }

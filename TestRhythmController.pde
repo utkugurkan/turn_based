@@ -31,7 +31,7 @@ class TestRhythmController {
     println("Original seed:");
     printNoteEvents(seed);
     println("Quantized seed:");
-    printNoteEvents(rc.quantize(seed));
+    printNoteEvents(rc.quantize(seed, 0));
     println();
   }
   
@@ -53,7 +53,7 @@ class TestRhythmController {
     println("Original seed:");
     printNoteEvents(seed);
     println("Quantized seed:");
-    printNoteEvents(rc.quantize(seed));
+    printNoteEvents(rc.quantize(seed, 1));
     println();
   }
   
@@ -91,7 +91,7 @@ class TestRhythmController {
     println("Original seed:");
     printNoteEvents(seed);
     println("Quantized seed:");
-    printNoteEvents(rc.quantize(seed));
+    printNoteEvents(rc.quantize(seed, 2));
     println();
   }
   
@@ -126,7 +126,7 @@ class TestRhythmController {
     println("Original seed:");
     printNoteEvents(seed);
     println("Quantized seed:");
-    printNoteEvents(rc.quantize(seed));
+    printNoteEvents(rc.quantize(seed, 3));
     println();
   }
   

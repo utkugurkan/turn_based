@@ -1,6 +1,6 @@
 RhythmController rhythmController = new RhythmController();
 
-boolean metronome_on = true;
+boolean metronome_on = false;
 
 public class RhythmController {
   public static final float RHYTHM_ENABLE_PROBABILITY = 1f; // 0.05f;
@@ -8,22 +8,23 @@ public class RhythmController {
   // In order of priority.
   // (if multiple fractions are applicable, the earlier one will be used)
   public final float[] ALLOWABLE_FRACTIONS = {
-    //1f / 4f,
-    //1f / 6f,
-    //1f / 7f,
-    //1f / 13f,
-    1f
+    1f / 4f,
+    1f / 6f,
+    1f / 7f,
+    1f / 13f,
   };
   
   // Allowable grid divisions.
   // Some sort of a duration factor.
-  public final int MAX_NOTE_DURATION_AS_UNIT_NOTE_FACTOR = 4;
+  private final static int MAX_NOTE_DURATION_AS_UNIT_NOTE_FACTOR = 4;
   
-  public final int VELOCITY_INCREASE_FOR_MEASURE_START = 10;
+  private final static int VELOCITY_INCREASE_FOR_MEASURE_START = 10;
   //public final int VELOCITY_INCREASE_FOR_ON_BEAT = 5;
   
+  private final static int MIN_NOTE_LENGTH = 100;
+  
   public RhythmController() {
-    
+    rhythmStates = new HashMap<Integer, RhythmState>();
   }
   
   public boolean isEnabled() {
@@ -33,6 +34,8 @@ public class RhythmController {
     return _measuresLeft != 0;
   }
   
+  private static final int MAX_UNIT_NOTE_LENGTH = 2000; // 60 bpm
+  private static final int MIN_UNIT_NOTE_LENGTH = 333; // 180 bpm
   public void update() {
     if (!_isActive) {
       return;
@@ -42,20 +45,32 @@ public class RhythmController {
       return;
     }
     
+    println("Updating RhythmController.");
+    
     // If rhythm is enabled.
-    if (_measuresLeft != 0) {
+    if (_measuresLeft > 0) {
       --_measuresLeft;
       //println("Remaining measures with rhythm: " + _measuresLeft + ", note length: " + _unitNoteLength + ", notes per measure: " + _notesPerMeasure);
+      updateAllRhythmStates();
     }
     else {
       if (random(1) < RHYTHM_ENABLE_PROBABILITY) {
         println("Enabling Rhythm");
-        // TODO: Don't hardcode this once initial testing is done.
-        _unitNoteLength = int(random(200, 500));
-        _notesPerMeasure = int(random(3, 4));
+        
+        _unitNoteLength = int(map(
+          pieceState.speed.getValue(),
+          StateProperty.MIN_VAL,
+          StateProperty.MAX_VAL,
+          MAX_UNIT_NOTE_LENGTH, 
+          MIN_UNIT_NOTE_LENGTH));
+          
+        _notesPerMeasure = int(random(3, 6));
         int approximateDuration = int(random(20000, 60000)); // Takes between these values in ms.
         //_measuresLeft = 20;
         _measuresLeft = approximateDuration / getMeasureLength();
+        println("Unit note length: " + _unitNoteLength + ", notes per measure: " + _notesPerMeasure + ", for measure length: " + _measuresLeft);
+        
+        resetAllRhythmStates();
       } else {
         return;
       }
@@ -137,20 +152,27 @@ public class RhythmController {
     return measureLowerBoundCount;
   }
   
-  public NoteEvent[] quantize(NoteEvent[] input) {
+  public NoteEvent[] quantize(NoteEvent[] input, int id) {
     NoteEvent[] res = deepClone(input);
+    
+    if (!rhythmStates.containsKey(id)) {
+      RhythmState newState = new RhythmState();
+      resetRhythmState(newState);
+      rhythmStates.put(id, newState);
+    }
+    
     
     for (int i = 0; i < res.length; ++i) {
       //res[i].setStartTime(getQuantizedTime(res[i]));
-      quantizeNote(res[i]);
+      quantizeNote(res[i], rhythmStates.get(id).fractions);
     }
     
     return res;
   }
   
-  public void quantizeNote(NoteEvent note) {
+  public void quantizeNote(NoteEvent note, float[] fractions) {
     QuantizationState qState = new QuantizationState();
-    setQuantizedTimeInfo(note, qState);
+    setQuantizedTimeInfo(note, qState, fractions);
     setQuantizedDurationInfo(note, qState);
     
     note.setStartTime(note.getStartTime() + qState.quantizerOffset);
@@ -159,10 +181,10 @@ public class RhythmController {
   }
   
   // These functions set the info in qState, not the note.
-  private void setQuantizedTimeInfo(NoteEvent note, QuantizationState qState) {
+  private void setQuantizedTimeInfo(NoteEvent note, QuantizationState qState, float[] fractions) {
     int noteStartTime = note.getStartTime();
     int measureStartTime = getBaseMeasureTime(note);
-    setQuantizingOffsetAndFraction(noteStartTime - measureStartTime, qState);
+    setQuantizingOffsetAndFraction(noteStartTime - measureStartTime, qState, fractions);
   }
   
   private void setQuantizedDurationInfo(NoteEvent note, QuantizationState qState) {
@@ -171,8 +193,10 @@ public class RhythmController {
     int largestMultiplier = getLargestMultiplierForFraction(qState.fraction);
     
     for (int i = 1; i <= largestMultiplier; ++i) {
-      // TODO: Consider a minimum note length?
       int noteLength = int(i * qState.fraction * _unitNoteLength);
+      if (noteLength < MIN_NOTE_LENGTH) {
+        continue;
+      }
       int thisDiff = abs(note.getDuration() - noteLength);
       if (thisDiff < closestDifference) {
         closestMultiplier = i;
@@ -194,16 +218,16 @@ public class RhythmController {
     return int(1.0f / fraction) * MAX_NOTE_DURATION_AS_UNIT_NOTE_FACTOR;
   }
   
-  private void setQuantizingOffsetAndFraction(int startTimeInMeasure, QuantizationState qState) {
+  private void setQuantizingOffsetAndFraction(int startTimeInMeasure, QuantizationState qState, float[] fractions) {
     int closestQuantizedOffset = getMeasureLength(); // set it to a large value.
     float usedFraction = 1;
     
-    for (int i = 0; i < ALLOWABLE_FRACTIONS.length; ++i) {
-      int offset = getOffsetFromFractionGrid(startTimeInMeasure, ALLOWABLE_FRACTIONS[i]);
+    for (int i = 0; i < fractions.length; ++i) {
+      int offset = getOffsetFromFractionGrid(startTimeInMeasure, fractions[i]);
       
       if (abs(offset) < abs(closestQuantizedOffset)) {
         closestQuantizedOffset = offset;
-        usedFraction = ALLOWABLE_FRACTIONS[i];
+        usedFraction = fractions[i];
       }
     }
     
@@ -265,12 +289,40 @@ public class RhythmController {
     return _unitNoteLength * _notesPerMeasure;
   }
   
+  private static final int MIN_FRACTION_TURNS = 5;
+  private static final int MAX_FRACTION_TURNS = 15;
+  private void resetRhythmState(RhythmState state) {
+    println("Resetting one rhythm state.");
+    int fractionIndex = int(random(ALLOWABLE_FRACTIONS.length));
+    state.fractions = new float[1];
+    state.fractions[0] = ALLOWABLE_FRACTIONS[fractionIndex];
+    state.timeLeft = int(random(MIN_FRACTION_TURNS, MAX_FRACTION_TURNS + 0.5));
+  }
+  
+  private void resetAllRhythmStates() {
+    for (RhythmState state : rhythmStates.values()) {
+      resetRhythmState(state);
+    }
+  }
+  
+  private void updateAllRhythmStates() {
+    for (RhythmState state : rhythmStates.values()) {
+      --state.timeLeft;
+      if (state.timeLeft <= 0) {
+        resetRhythmState(state);
+      }
+      state.printState();
+    }
+  }
+  
   private int _unitNoteLength;
   private int _notesPerMeasure;
   // How many measures left with the current parameters.
   private int _measuresLeft;
   private int _nextUpdateTime = 0;
   private boolean _isActive = true;
+  // Keeps states mapped from id numbers.
+  private HashMap<Integer, RhythmState> rhythmStates;
   
   private class QuantizationState {
     float fraction;
