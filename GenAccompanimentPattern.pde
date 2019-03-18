@@ -177,11 +177,11 @@ class GenAccompanimentPattern extends GenerationMethod {
       curLength += noteLength;
     }
     
-    println("Generated pattern length: " + pattern.size());
-    print("Generated pattern: ");
-    for (PatternEntity ent : pattern) {
-      ent.print();
-    }
+    //println("Generated pattern length: " + pattern.size());
+    //print("Generated pattern: ");
+    //for (PatternEntity ent : pattern) {
+    //  ent.print();
+    //}
     
     NoteEvent startingNote = getNewStartingNote();
     PatternEntity[] patternArr = new PatternEntity[pattern.size()];
@@ -297,7 +297,7 @@ class GenAccompanimentPattern extends GenerationMethod {
     if (data != null && data.length >= 3 && data[0].type == PatternEntity[].class &&
       data[1].type == Integer.class && data[2].type == NoteEvent.class) {
         
-      println("Using the same pattern.");
+      //println("Using the same pattern.");
       PatternEntity[] template = (PatternEntity[])data[0].value;
       int curIndex = (int)data[1].value;
       NoteEvent prevNote = (NoteEvent)data[2].value;
@@ -307,7 +307,7 @@ class GenAccompanimentPattern extends GenerationMethod {
       return new TemplateState(template, curIndex, 0, prevNote);
     }
     else {
-      println("Not using the same pattern.");
+      //println("Not using the same pattern.");
       return null;
     }
   }

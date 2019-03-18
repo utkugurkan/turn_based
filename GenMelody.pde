@@ -197,7 +197,7 @@ class GenMelody extends GenerationMethod {
       modifyTemplate(template);
       return template;
     }
-    println("ATTN!! Generating new melody template");
+    //println("ATTN!! Generating new melody template");
     
     int templateLength = calculateTemplateLength(seedLength);
     
@@ -301,7 +301,7 @@ class GenMelody extends GenerationMethod {
       return;
     }
 
-    println("Modifying template.");
+    //println("Modifying template.");
     int durationToModify = int(random(MIN_UNIT_NOTE_FRACTION_TO_MODIFY, MAX_UNIT_NOTE_FRACTION_TO_MODIFY) * templateState.unitNoteLength);
     float fractionToModify = (float)durationToModify / templateState.unitNoteLength;
     PatternEntity[] template = templateState.template;

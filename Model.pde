@@ -24,6 +24,7 @@ class Model {
       updateSystemsPerTurnFrequency(seed);
       
       if (rhythmController.isEnabled()) {
+        println("Using RhythmController to quantize notes.");
         NoteEvent[] quantizedSeed = rhythmController.quantizeSeed(seed);
         allGenResults = genNextTurnMaterial(quantizedSeed);
       }

@@ -3,7 +3,7 @@ RhythmController rhythmController = new RhythmController();
 boolean metronome_on = false;
 
 public class RhythmController {
-  public static final float RHYTHM_ENABLE_PROBABILITY = 1f; // 0.05f;
+  public static final float RHYTHM_ENABLE_PROBABILITY = 0.05f;
   // What fractions of the unit note are allowable.
   // In order of priority.
   // (if multiple fractions are applicable, the earlier one will be used)
@@ -31,7 +31,7 @@ public class RhythmController {
     if (!_isActive) {
       return false;
     }
-    return _measuresLeft != 0;
+    return _measuresLeft > 0;
   }
   
   private static final int MAX_UNIT_NOTE_LENGTH = 2000; // 60 bpm
@@ -53,9 +53,8 @@ public class RhythmController {
       //println("Remaining measures with rhythm: " + _measuresLeft + ", note length: " + _unitNoteLength + ", notes per measure: " + _notesPerMeasure);
       updateAllRhythmStates();
     }
-    else {
-      if (random(1) < RHYTHM_ENABLE_PROBABILITY) {
-        println("Enabling Rhythm");
+    else if (random(1) < RHYTHM_ENABLE_PROBABILITY) {
+        println("Generating new rhythm properties.");
         
         _unitNoteLength = int(map(
           pieceState.speed.getValue(),
@@ -68,14 +67,16 @@ public class RhythmController {
         int approximateDuration = int(random(20000, 60000)); // Takes between these values in ms.
         //_measuresLeft = 20;
         _measuresLeft = approximateDuration / getMeasureLength();
-        println("Unit note length: " + _unitNoteLength + ", notes per measure: " + _notesPerMeasure + ", for measure length: " + _measuresLeft);
         
         resetAllRhythmStates();
-      } else {
-        return;
-      }
     }
     
+    if (isEnabled()) {
+      println("Unit note length: " + _unitNoteLength + ", notes per measure: " + _notesPerMeasure + ", for measure length: " + _measuresLeft);
+    }
+    else {
+      println("RhythmController is not enabled.");
+    }
     _nextUpdateTime = millis() + getMeasureLength();
   }
   
@@ -209,7 +210,7 @@ public class RhythmController {
   
   private void setVelocity(NoteEvent note) {
     if ((note.getStartTime() % getMeasureLength()) == 0) {
-      println("Setting velocity for onbeat notes.");
+      //println("Setting velocity for onbeat notes.");
       note.setVelocity(note.getVelocity() + VELOCITY_INCREASE_FOR_MEASURE_START);
     }
   }
@@ -292,7 +293,7 @@ public class RhythmController {
   private static final int MIN_FRACTION_TURNS = 5;
   private static final int MAX_FRACTION_TURNS = 15;
   private void resetRhythmState(RhythmState state) {
-    println("Resetting one rhythm state.");
+    //println("Resetting one rhythm state.");
     int fractionIndex = int(random(ALLOWABLE_FRACTIONS.length));
     state.fractions = new float[1];
     state.fractions[0] = ALLOWABLE_FRACTIONS[fractionIndex];
@@ -311,7 +312,7 @@ public class RhythmController {
       if (state.timeLeft <= 0) {
         resetRhythmState(state);
       }
-      state.printState();
+      //state.printState();
     }
   }
   
