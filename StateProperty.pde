@@ -20,7 +20,7 @@ public class StateProperty {
   public void update() {
     if (_currentValue == _targetValue) {
       ++_updateCountAtTarget;
-      println("Target value reached.");
+      //println("Target value reached.");
     } else {
       float newValue = _currentValue + _changeRatePerTurn;
       if ((_targetValue > _currentValue && _targetValue < newValue) ||

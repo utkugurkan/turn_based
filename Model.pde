@@ -179,8 +179,8 @@ class Model {
       if (genResult.length > 0) {
         int noteIndex = int(random(genResult.length));
         NoteEvent note = genResult[noteIndex];
-        print("Adding note: ");
-        printNoteEvent(note);
+        //print("Adding note: ");
+        //printNoteEvent(note);
         
         resultList.add(new NoteEvent(note));
       }

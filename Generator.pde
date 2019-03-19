@@ -8,7 +8,7 @@ final GenerationMethod[] GEN_METHODS = {
     new GenIdentity(),
     //new GenDisplaced(),
     //new GenRedistributeSeedContent(),
-    new GenForestAccompaniment(),
+    //new GenForestAccompaniment(),
     new GenHarmony(),
     new GenMelody(),
     new GenAccompanimentPattern()
