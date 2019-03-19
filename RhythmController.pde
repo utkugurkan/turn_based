@@ -3,7 +3,7 @@ RhythmController rhythmController = new RhythmController();
 boolean metronome_on = false;
 
 public class RhythmController {
-  public static final float RHYTHM_ENABLE_PROBABILITY = 0.05f;
+  public static final float RHYTHM_ENABLE_PROBABILITY = 0.5f;
   // What fractions of the unit note are allowable.
   // In order of priority.
   // (if multiple fractions are applicable, the earlier one will be used)
@@ -36,6 +36,8 @@ public class RhythmController {
   
   private static final int MAX_UNIT_NOTE_LENGTH = 2000; // 60 bpm
   private static final int MIN_UNIT_NOTE_LENGTH = 333; // 180 bpm
+  private static final int MIN_STATE_LENGTH = 20000;
+  private static final int MAX_STATE_LENGTH = 60000;
   public void update() {
     if (!_isActive) {
       return;
@@ -53,22 +55,32 @@ public class RhythmController {
       //println("Remaining measures with rhythm: " + _measuresLeft + ", note length: " + _unitNoteLength + ", notes per measure: " + _notesPerMeasure);
       updateAllRhythmStates();
     }
-    else if (random(1) < RHYTHM_ENABLE_PROBABILITY) {
-        println("Generating new rhythm properties.");
-        
-        _unitNoteLength = int(map(
-          pieceState.speed.getValue(),
-          StateProperty.MIN_VAL,
-          StateProperty.MAX_VAL,
-          MAX_UNIT_NOTE_LENGTH, 
-          MIN_UNIT_NOTE_LENGTH));
+    else {
+      // If enable rhythm or regenerate the state.
+      if (random(1) < RHYTHM_ENABLE_PROBABILITY) {
+          println("Generating new rhythm properties.");
           
-        _notesPerMeasure = int(random(3, 6));
-        int approximateDuration = int(random(20000, 60000)); // Takes between these values in ms.
-        //_measuresLeft = 20;
-        _measuresLeft = approximateDuration / getMeasureLength();
-        
-        resetAllRhythmStates();
+          _unitNoteLength = int(map(
+            pieceState.speed.getValue(),
+            StateProperty.MIN_VAL,
+            StateProperty.MAX_VAL,
+            MAX_UNIT_NOTE_LENGTH, 
+            MIN_UNIT_NOTE_LENGTH));
+            
+          _notesPerMeasure = int(random(3, 6));
+          int approximateDuration = int(random(MIN_STATE_LENGTH, MAX_STATE_LENGTH));
+          //_measuresLeft = 20;
+          _measuresLeft = approximateDuration / getMeasureLength();
+          
+          resetAllRhythmStates();
+      }
+      // Disable rhythm.
+      else {
+        println("Disabling rhythm.");
+        int approximateDisableDuration = int(random(MIN_STATE_LENGTH, MAX_STATE_LENGTH));
+        _nextUpdateTime = millis() + approximateDisableDuration;
+        return;
+      }
     }
     
     if (isEnabled()) {
