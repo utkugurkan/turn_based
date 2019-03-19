@@ -6,11 +6,14 @@ class Model {
     _turnEndTime = 0;
     
     _generators = new Generator[MAX_GENERATOR_COUNT];
+    _oldDataPackets = new ArrayList<ArrayList<GeneratorState>>();
     for (int i = 0; i < _generators.length; ++i) {
       _generators[i] = new Generator();
+      _oldDataPackets.add(new ArrayList<GeneratorState>());
     }
     
     pieceState.genState();
+    
   }
   
   public NoteEvent[] update(NoteEvent[] seed) {
@@ -46,8 +49,7 @@ class Model {
     
     // Update player.
     player.update();
-    
-    
+
     if (newSeed != null) {
       return newSeed;
     }
@@ -100,6 +102,16 @@ class Model {
       _generators.length);
     println("Using " + numGen + " generators.");
     
+    boolean needToSaveState = false;
+    if (_turnCountSinceSeedReset == 0) {
+      if (_oldDataPackets.get(0).size() > 0 && random(1f) < USE_OLD_GEN_STATE_PROBABILITY) {
+        loadRandomGeneratorState();
+      }
+      else {
+        needToSaveState = true;
+      }
+    }
+    
     // Pass on to generators and apply effects.
     for (int i = 0; i < numGen; ++i) {
       Generator gen = _generators[i];
@@ -124,6 +136,12 @@ class Model {
     
     if (metronome_on) {
       allGenResults.add(rhythmController.getMetronomeNotesForSeed(seed));
+    }
+    
+    // If just generated with this seed for the first time,
+    // store the data.
+    if (needToSaveState) {
+      storeGeneratorStates();
     }
     
     return allGenResults;
@@ -177,8 +195,8 @@ class Model {
     ++_turnCountSinceSeedReset;
     
     println();
-    println("New seed: (turns since last reset is " + _turnCountSinceSeedReset + ") ");
-    printNoteEvents(seedResultArr);
+    //println("New seed: (turns since last reset is " + _turnCountSinceSeedReset + ") ");
+    //printNoteEvents(seedResultArr);
     
     return seedResultArr;
   }
@@ -255,10 +273,42 @@ class Model {
     }
   }
   
+  private void storeGeneratorStates() {
+    // if this would make the stored state list too long
+    if (_oldDataPackets.get(0).size() + 1 >= OLD_GEN_STATE_COUNT_TO_STORE) {
+      int size = _oldDataPackets.get(0).size();
+      int idxToRemove = int(random(size));
+      println("Removing index " + idxToRemove + " from old generator states.");
+      for (int i = 0; i < size; ++i) {
+        _oldDataPackets.get(i).remove(idxToRemove);
+      }
+    }
+    
+    // Add state.
+    for (int i = 0; i < _generators.length; ++i) {
+      _oldDataPackets.get(i).add(_generators[i].getState());
+    }   
+  }
+  
+  private void loadRandomGeneratorState() {
+    if (_oldDataPackets.get(0).size() <= 0) {
+      return;
+    }
+    
+    int idxToLoad = int(random(_oldDataPackets.get(0).size()));
+    println("Loading random generator state at index " + idxToLoad);
+    for (int i = 0; i < _generators.length; ++i) {
+      _generators[i].setState(_oldDataPackets.get(i).get(idxToLoad));
+    }
+  }
+  
   private static final float REMOVAL_FROM_SEED_ODDS = 0.2f;
   private static final float ADDITION_TO_SEED_ODDS = 0.4f;
+  private static final float USE_OLD_GEN_STATE_PROBABILITY = 0.1f;
+  private static final int OLD_GEN_STATE_COUNT_TO_STORE = 5;
   
   private int _turnEndTime;
   private int _turnCountSinceSeedReset = 0;
   private Generator[] _generators;
+  private ArrayList<ArrayList<GeneratorState>> _oldDataPackets;
 }

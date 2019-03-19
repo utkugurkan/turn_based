@@ -51,9 +51,9 @@ class Generator {
     //GenerationMethod randomGenMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
     selectGenMethod();
     NoteEvent[] genResult = _genMethod.generateFromSeed(seed, _genMethodState);
-    if (_genMethodState == null) {
-      println("Gen method is still null");
-    }
+    //if (_genMethodState == null) {
+    //  println("Gen method is still null");
+    //}
     
     // Set the end time of the generated material. This Generator will become available
     // at _jobFinishTime.
@@ -65,6 +65,15 @@ class Generator {
   
   public void dropStateData() {
     _genMethodState = new DataPacketSet();
+  }
+  
+  public GeneratorState getState() {
+    return new GeneratorState(_genMethod, _genMethodState);
+  }
+  
+  public void setState(GeneratorState state) {
+    _genMethod = state.genMethod;
+    _genMethodState = state.dataPacket;
   }
   
   private void resetState() {
@@ -83,7 +92,7 @@ class Generator {
     // Repeated as many times as the target.
     // So we can pick a new one.
     if (_genMethodRepeatCurrentCount == _genMethodRepeatTarget) {
-      println("ATTENTION!!! Picking new generation method.");
+      //println("ATTENTION!!! Picking new generation method.");
       _genMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
       int minRepetition = _genMethod.getMinRecommendedGenerationCount();
       int maxRepetition = _genMethod.getMaxRecommendedGenerationCount();
@@ -106,4 +115,16 @@ class Generator {
   private int _genMethodRepeatTarget;
   private int _genMethodRepeatCurrentCount;
   
+}
+
+// Used to describe the state of what GenerationMethod is being used with what
+// data.
+public class GeneratorState {
+  public GeneratorState(GenerationMethod genMethodIn, DataPacketSet dataPacketIn) {
+    dataPacket = dataPacketIn.getCopy();
+    genMethod = genMethodIn;
+  }
+  
+  GenerationMethod genMethod;
+  DataPacketSet dataPacket;
 }

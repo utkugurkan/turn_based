@@ -1,6 +1,21 @@
 
 public class DataPacketSet {
   public DataPacket[] data;
+  
+  public DataPacketSet getCopy() {
+    DataPacketSet newSet = new DataPacketSet();
+    if (data == null) {
+      newSet.data = null;
+    }
+    else {
+      DataPacket[] newData = new DataPacket[data.length];
+      for (int i = 0; i < data.length; ++i) {
+        newData[i] = new DataPacket(data[i]);
+      }
+      newSet.data = newData;
+    }
+    return newSet;
+  }
 }
 
 public class DataPacket<T> {  
@@ -10,6 +25,11 @@ public class DataPacket<T> {
   public DataPacket(T valueIn) {
     type = valueIn.getClass();
     value = valueIn;
+  }
+  
+  public DataPacket(DataPacket<T> other) {
+    type = other.type;
+    value = other.value;
   }
   
   //public DataPacketType type;
