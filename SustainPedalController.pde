@@ -1,4 +1,4 @@
-
+SustainPedalController sustainPedalController = new SustainPedalController(); 
 
 class SustainPedalController {
   
@@ -9,8 +9,6 @@ class SustainPedalController {
     for (int i = 0; i < numNotesPerHarmony.length; ++i) {
       numNotesPerHarmony[i] = 0;
     }
-    
-    
     
     for (NoteEvent[] notes : noteLists) {
       int harmIdx = 0;
@@ -77,14 +75,28 @@ class SustainPedalController {
 
 public class PedalEvent {
   
-  public PedalEvent(int velocityIn, int startTimeIn) {
-    velocity = velocityIn;
-    startTime = startTimeIn;
+  public PedalEvent(int velocity, int startTime) {
+    _velocity = velocity;
+    _startTime = startTime;
+  }
+  
+  public int getVelocity() {
+    return _velocity;
+  }
+  
+  public int getStartTime() {
+    return _startTime;
   }
   
   public static final int MIN_PEDAL_VELOCITY = 0; // Means off.
   public static final int MAX_PEDAL_VELOCITY = 120;
   
-  int velocity;
-  int startTime;
+  private int _velocity;
+  private int _startTime;
+}
+
+class SortPedalEventByStartTime implements Comparator<PedalEvent> {
+  public int compare(PedalEvent lhs, PedalEvent rhs) {
+    return lhs.getStartTime() - rhs.getStartTime();
+  }
 }

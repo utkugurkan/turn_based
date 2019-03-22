@@ -44,8 +44,10 @@ class Model {
         adjustSeedForBaseTime(singleGenResult, baseTime);
         player.addNotes(singleGenResult);
       }
+      
+      PedalEvent[] sustainPedaling = sustainPedalController.genPedaling(allGenResults, _turnLength);
+      player.addSustainPedaling(sustainPedaling);
     }
-    
     
     // Update player.
     player.update();

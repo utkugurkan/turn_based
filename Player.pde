@@ -4,8 +4,9 @@ import themidibus.*;
 
 class Player {
   public Player(int midiOutputDeviceIndex, int midiChannel) {
-    _toPlay = new PriorityQueue<NoteEvent>(1, new SortNoteEventByStartTime());
-    _toStop = new PriorityQueue<NoteEvent>(1, new SortNoteEventByEndTime());
+    _notesToPlay = new PriorityQueue<NoteEvent>(1, new SortNoteEventByStartTime());
+    _notesToStop = new PriorityQueue<NoteEvent>(1, new SortNoteEventByEndTime());
+    _sustainPedalingToPlay = new PriorityQueue<PedalEvent>(1, new SortPedalEventByStartTime());
     
     initPlayCounts();
     
@@ -16,29 +17,45 @@ class Player {
   public void update() {
     playNotes();
     stopNotes();
+    playSustainPedal();
   }
   
   public void addNotes(NoteEvent[] newNotes) {
     for (NoteEvent note : newNotes) {
-      _toPlay.add(note);
+      _notesToPlay.add(note);
+    }
+  }
+  
+  public void addSustainPedaling(PedalEvent[] pedaling) {
+    for (PedalEvent pedal : pedaling) {
+      _sustainPedalingToPlay.add(pedal);
     }
   }
   
   private void playNotes() {
-    while (_toPlay.peek() != null && millis() >= _toPlay.peek().getStartTime()) {
-      NoteEvent noteToPlay = _toPlay.poll();
+    while (_notesToPlay.peek() != null && millis() >= _notesToPlay.peek().getStartTime()) {
+      NoteEvent noteToPlay = _notesToPlay.poll();
       // TODO: Get rid of this.
       //noteToPlay.setVelocity(30);
       //println("Playing " + noteToPlay.getPitch() + " with Velocity " + noteToPlay.getVelocity());
       _midiBus.sendNoteOn(_midiChannel, noteToPlay.getPitch(), noteToPlay.getVelocity());
-      _toStop.add(noteToPlay);
+      _notesToStop.add(noteToPlay);
     }
   }
   
   private void stopNotes() {
-    while (_toStop.peek() != null && millis() >= _toStop.peek().getEndTime()) {
-      NoteEvent noteToPlay = _toStop.poll();
+    while (_notesToStop.peek() != null && millis() >= _notesToStop.peek().getEndTime()) {
+      NoteEvent noteToPlay = _notesToStop.poll();
       _midiBus.sendNoteOff(_midiChannel, noteToPlay.getPitch(), noteToPlay.getVelocity());
+    }
+  }
+  
+  private void playSustainPedal() {
+    while (_sustainPedalingToPlay.peek() != null && millis() >= _sustainPedalingToPlay.peek().getStartTime()) {
+      PedalEvent pedalingToPlay = _sustainPedalingToPlay.poll();
+      _midiBus.sendControllerChange(_midiChannel, SUSTAIN_PEDAL_CONTROL_NUMBER, pedalingToPlay.getVelocity()); // Send a controllerChange
+      //_midiBus.sendNoteOn(_midiChannel, noteToPlay.getPitch(), noteToPlay.getVelocity());
+      //_notesToStop.add(noteToPlay);
     }
   }
   
@@ -65,9 +82,14 @@ class Player {
     _midiBus.sendTimestamps(false);
   }
   
-  private PriorityQueue<NoteEvent> _toPlay;
-  private PriorityQueue<NoteEvent> _toStop;
+  private static final int SUSTAIN_PEDAL_CONTROL_NUMBER = 64;
+  private static final int UNA_CORDA_CONTROL_NUMBER = 67;
+  
+  private PriorityQueue<NoteEvent> _notesToPlay;
+  private PriorityQueue<NoteEvent> _notesToStop;
   private HashMap<Integer, Integer> pitchToPlayCount;
+  
+  private PriorityQueue<PedalEvent> _sustainPedalingToPlay; 
   
   private int _midiChannel;
   private MidiBus _midiBus;
