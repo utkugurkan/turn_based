@@ -7,6 +7,7 @@ class Player {
     _notesToPlay = new PriorityQueue<NoteEvent>(1, new SortNoteEventByStartTime());
     _notesToStop = new PriorityQueue<NoteEvent>(1, new SortNoteEventByEndTime());
     _sustainPedalingToPlay = new PriorityQueue<PedalEvent>(1, new SortPedalEventByStartTime());
+    _unaCordaPedalingToPlay = new PriorityQueue<PedalEvent>(1, new SortPedalEventByStartTime());
     
     initPlayCounts();
     
@@ -15,6 +16,7 @@ class Player {
   }
   
   public void update() {
+    playUnaCordaPedal();
     playNotes();
     stopNotes();
     playSustainPedal();
@@ -29,6 +31,12 @@ class Player {
   public void addSustainPedaling(PedalEvent[] pedaling) {
     for (PedalEvent pedal : pedaling) {
       _sustainPedalingToPlay.add(pedal);
+    }
+  }
+  
+  public void addUnaCordaPedaling(PedalEvent[] pedaling) {
+    for (PedalEvent pedal : pedaling) {
+      _unaCordaPedalingToPlay.add(pedal);
     }
   }
   
@@ -54,12 +62,25 @@ class Player {
     while (_sustainPedalingToPlay.peek() != null && millis() >= _sustainPedalingToPlay.peek().getStartTime()) {
       PedalEvent pedalingToPlay = _sustainPedalingToPlay.poll();
       if (pedalingToPlay.getVelocity() <= PedalEvent.MIN_PEDAL_VELOCITY) {
-        println("Releasing sustain pedal.");
+        //println("Releasing sustain pedal.");
       }
       else {
-        println("Pressing sustain pedal with velocity " + pedalingToPlay.getVelocity());
+        //println("Pressing sustain pedal with velocity " + pedalingToPlay.getVelocity());
       }
       _midiBus.sendControllerChange(_midiChannel, SUSTAIN_PEDAL_CONTROL_NUMBER, pedalingToPlay.getVelocity()); // Send a controllerChange
+    }
+  }
+  
+  private void playUnaCordaPedal() {
+    while (_unaCordaPedalingToPlay.peek() != null && millis() >= _unaCordaPedalingToPlay.peek().getStartTime()) {
+      PedalEvent pedalingToPlay = _unaCordaPedalingToPlay.poll();
+      if (pedalingToPlay.getVelocity() <= PedalEvent.MIN_PEDAL_VELOCITY) {
+        //println("Releasing una corda pedal.");
+      }
+      else {
+        //println("Pressing una corda pedal with velocity " + pedalingToPlay.getVelocity());
+      }
+      _midiBus.sendControllerChange(_midiChannel, UNA_CORDA_CONTROL_NUMBER, pedalingToPlay.getVelocity()); // Send a controllerChange
     }
   }
   
@@ -94,6 +115,7 @@ class Player {
   private HashMap<Integer, Integer> pitchToPlayCount;
   
   private PriorityQueue<PedalEvent> _sustainPedalingToPlay; 
+  private PriorityQueue<PedalEvent> _unaCordaPedalingToPlay; 
   
   private int _midiChannel;
   private MidiBus _midiBus;

@@ -37,6 +37,7 @@ class Model {
       
       // Generate pedaling.
       PedalEvent[] sustainPedaling = sustainPedalController.genPedaling(allGenResults, _turnLength);
+      PedalEvent[] unaCordaPedaling = unaCordaPedalController.genPedaling();
       
       // Generate new seed
       newSeed = calculateNewSeed(seed, allGenResults);
@@ -49,7 +50,9 @@ class Model {
       }
       
       adjustPedalEventsForBaseTime(sustainPedaling, baseTime);
+      adjustPedalEventsForBaseTime(unaCordaPedaling, baseTime);
       player.addSustainPedaling(sustainPedaling);
+      player.addUnaCordaPedaling(unaCordaPedaling);
     }
     
     // Update player.

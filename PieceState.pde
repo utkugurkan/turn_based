@@ -21,14 +21,7 @@ public class PieceState {
       resetProperty(prop);
     }
     
-    //println("Speed value: " + speed.getValue() + ", change rate: " + speed.getChangeRatePerTurn() + 
-    //", target: " + speed.getTargetValue());
-    //println("Loudness value: " + loudness.getValue() + ", change rate: " + loudness.getChangeRatePerTurn() + 
-    //", target: " + loudness.getTargetValue());
-    //println("Tonality value: " + tonality.getValue() + ", change rate: " + tonality.getChangeRatePerTurn() + 
-    //", target: " + tonality.getTargetValue());
-    
-    //loudness.setValue(1.0f);
+    //loudness.setValue(0.0f);
     printAllProperties();
   }
   
@@ -41,14 +34,8 @@ public class PieceState {
         prop.update();
       }
     }
-    //println("Speed value: " + speed.getValue() + ", change rate: " + speed.getChangeRatePerTurn() + 
-    //", target: " + speed.getTargetValue());
-    //println("Loudness value: " + loudness.getValue() + ", change rate: " + loudness.getChangeRatePerTurn() + 
-    //", target: " + loudness.getTargetValue());
-    //println("Tonality value: " + tonality.getValue() + ", change rate: " + tonality.getChangeRatePerTurn() + 
-    //", target: " + tonality.getTargetValue());
      
-    //loudness.setValue(1.0f);
+    //loudness.setValue(0.0f);
     printAllProperties();
   }
   
