@@ -141,6 +141,17 @@ public class HarmonyController {
     }
   }
   
+  public int[] getHarmonyStartTimes() {
+    int[] res = new int[_harmonizedSeed.size()];
+    int i = 0;
+    for(Map.Entry<Integer, NoteEvent[]> entry : _harmonizedSeed.entrySet()) {
+      res[i] = entry.getKey();
+      ++i;
+    }
+    
+    return res;
+  }
+  
   //private GenHarmony _genHarmony;
   //private NoteEvent[] _harmonizedSeed;
   // From start times to an array of notes that form the harmony active at that time.

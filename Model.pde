@@ -86,6 +86,7 @@ class Model {
     
     int seedEndTime = getEndTime(seed); // This will be used as the turn length.
     // Set the turn end. After this we can generate a new turn.
+    _turnLength = seedEndTime;
     _turnEndTime = millis() + seedEndTime;
     println("Turn length: " + seedEndTime);
     
@@ -307,6 +308,7 @@ class Model {
   private static final float USE_OLD_GEN_STATE_PROBABILITY = 0.1f;
   private static final int OLD_GEN_STATE_COUNT_TO_STORE = 5;
   
+  private int _turnLength;
   private int _turnEndTime;
   private int _turnCountSinceSeedReset = 0;
   private Generator[] _generators;

@@ -4,8 +4,8 @@ class NoteEvent {
   static final int PITCH_MIN = 21;
   static final int PITCH_MAX = 108;
   
-  static final int VELOCITY_MIN = 30;
-  static final int VELOCITY_MAX = 127;
+  static final int VELOCITY_MIN = 30; //30
+  static final int VELOCITY_MAX = 127; //127
   
   public NoteEvent(int pitch, int velocity, int startTime, int duration) {
     if (pitch < PITCH_MIN) {

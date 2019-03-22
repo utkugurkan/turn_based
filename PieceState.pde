@@ -27,7 +27,7 @@ public class PieceState {
     //println("Tonality value: " + tonality.getValue() + ", change rate: " + tonality.getChangeRatePerTurn() + 
     //", target: " + tonality.getTargetValue());
     
-    //speed.setValue(0.8f);
+    //loudness.setValue(1.0f);
     speed.print();
     loudness.print();
     tonality.print();
@@ -50,7 +50,7 @@ public class PieceState {
     //println("Tonality value: " + tonality.getValue() + ", change rate: " + tonality.getChangeRatePerTurn() + 
     //", target: " + tonality.getTargetValue());
      
-    //speed.setValue(0.8f);
+    //loudness.setValue(1.0f);
     speed.print();
     loudness.print();
     tonality.print();
