@@ -60,6 +60,7 @@ class Generator {
     _jobFinishTime = millis() + getEndTime(seed);
     ++_genMethodRepeatCurrentCount;
     
+    println("Generator finished generation.");
     return genResult;
   }
   
