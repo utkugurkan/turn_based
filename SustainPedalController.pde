@@ -63,6 +63,10 @@ class SustainPedalController {
           PedalEvent.MAX_PEDAL_VELOCITY));
         PedalEvent pressEvent = new PedalEvent(pressVelocity, harmStartTime + PEDAL_RELEASE_DURATION);
         pedalEvents.add(pressEvent);
+        //println("Adding pedals: " + pressVelocity + " for bucket size " + numNotesPerHarmony[i]);
+      }
+      else {
+        //println("Not adding pedals.");
       }
     }
     
@@ -86,6 +90,10 @@ public class PedalEvent {
   
   public int getStartTime() {
     return _startTime;
+  }
+  
+  public void setStartTime(int startTime) {
+    _startTime = startTime;
   }
   
   public static final int MIN_PEDAL_VELOCITY = 0; // Means off.

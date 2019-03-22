@@ -35,17 +35,20 @@ class Model {
         allGenResults = genNextTurnMaterial(seed);
       }
       
+      // Generate pedaling.
+      PedalEvent[] sustainPedaling = sustainPedalController.genPedaling(allGenResults, _turnLength);
+      
       // Generate new seed
       newSeed = calculateNewSeed(seed, allGenResults);
     
       // Register the genResults to be played.
       int baseTime = millis();
       for (NoteEvent[] singleGenResult : allGenResults) {
-        adjustSeedForBaseTime(singleGenResult, baseTime);
+        adjustNoteEventsForBaseTime(singleGenResult, baseTime);
         player.addNotes(singleGenResult);
       }
       
-      PedalEvent[] sustainPedaling = sustainPedalController.genPedaling(allGenResults, _turnLength);
+      adjustPedalEventsForBaseTime(sustainPedaling, baseTime);
       player.addSustainPedaling(sustainPedaling);
     }
     
@@ -270,9 +273,15 @@ class Model {
   }
   
   // Adds the baseTime to the startTime of all the notes in a seed.
-  private void adjustSeedForBaseTime(NoteEvent[] seed, int baseTime) {
-    for (NoteEvent note : seed) {
+  private void adjustNoteEventsForBaseTime(NoteEvent[] notes, int baseTime) {
+    for (NoteEvent note : notes) {
        note.setStartTime(note.getStartTime() + baseTime); 
+    }
+  }
+  
+  private void adjustPedalEventsForBaseTime(PedalEvent[] pedals, int baseTime) {
+    for (PedalEvent pedal : pedals) {
+       pedal.setStartTime(pedal.getStartTime() + baseTime); 
     }
   }
   
