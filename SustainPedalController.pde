@@ -45,6 +45,10 @@ class SustainPedalController {
   private static final int PEDAL_RELEASE_DURATION = 100; // in ms
   private static final int MIN_PEDAL_PRESS_DURATION = 100; // in ms
   private static final int MIN_ACTIVE_PEDAL_VELOCITY = 30; // We technically do go lower.
+  private static final float NOTE_COUNT_CONTRIBUTION_CONSTANT = 0.5f;
+  private static final float PIECE_STATE_CONTRIBUTION_CONSTANT = 0.5f;
+  // Calculate a pedal velocity based on the note count during a period as well as the piece state property.
+  
   private PedalEvent[] genPedalingFromHarmonyBuckets(int[] harmonyStartTimes, int[] numNotesPerHarmony, int endTime) {
     ArrayList<PedalEvent> pedalEvents = new ArrayList<PedalEvent>();
     //boolean isPressed = false;
@@ -62,14 +66,24 @@ class SustainPedalController {
       }
       
       if (harmEndTime - harmStartTime > PEDAL_RELEASE_DURATION + MIN_PEDAL_PRESS_DURATION) {
-        int pressVelocity = int(map(
+        int pressVelocityBasedOnNoteCount = int(map(
           min(numNotesPerHarmony[i], MAX_NOTE_PER_HARMONY),
           MIN_NOTE_PER_HARMONY,
           MAX_NOTE_PER_HARMONY,
           MIN_ACTIVE_PEDAL_VELOCITY,
           PedalEvent.MAX_PEDAL_VELOCITY));
-        pressVelocity = int(pieceState.sustainPedalLevel.getValue() * pressVelocity); 
-        PedalEvent pressEvent = new PedalEvent(pressVelocity, harmStartTime + PEDAL_RELEASE_DURATION);
+        int pressVelocityBasedOnPieceState = int(map(
+          pieceState.sustainPedalLevel.getValue(),
+          StateProperty.MIN_VAL,
+          StateProperty.MAX_VAL,
+          MIN_ACTIVE_PEDAL_VELOCITY,
+          PedalEvent.MAX_PEDAL_VELOCITY));
+          
+        int finalPressVelocity = 
+          int(pressVelocityBasedOnNoteCount * NOTE_COUNT_CONTRIBUTION_CONSTANT + 
+          pressVelocityBasedOnPieceState * PIECE_STATE_CONTRIBUTION_CONSTANT);
+          
+        PedalEvent pressEvent = new PedalEvent(finalPressVelocity, harmStartTime + PEDAL_RELEASE_DURATION);
         pedalEvents.add(pressEvent);
         //println("Adding pedals: " + pressVelocity + " for bucket size " + numNotesPerHarmony[i]);
       }
