@@ -11,8 +11,9 @@ public class PieceState {
   public StateProperty loudness = new StateProperty("loudness");
   public TonalityStateProperty tonality = new TonalityStateProperty("tonality");
   public StateProperty noteDensity = new StateProperty("noteDensity");
+  public StateProperty sustainPedalLevel = new StateProperty("sustainPedalLevel");
   
-  private StateProperty[] _properties = { speed, loudness, tonality, noteDensity };
+  private StateProperty[] _properties = { speed, loudness, tonality, noteDensity, sustainPedalLevel };
   
   // This is not update! Sets the state values randomly.
   public void genState() {
@@ -28,10 +29,7 @@ public class PieceState {
     //", target: " + tonality.getTargetValue());
     
     //loudness.setValue(1.0f);
-    speed.print();
-    loudness.print();
-    tonality.print();
-    noteDensity.print();
+    printAllProperties();
   }
   
   public void update() {
@@ -51,10 +49,7 @@ public class PieceState {
     //", target: " + tonality.getTargetValue());
      
     //loudness.setValue(1.0f);
-    speed.print();
-    loudness.print();
-    tonality.print();
-    noteDensity.print();
+    printAllProperties();
   }
   
   public void resetProperty(StateProperty prop) {
@@ -74,5 +69,11 @@ public class PieceState {
       
     println("After reset: ");
     loudness.print();
+  }
+  
+  public void printAllProperties() {
+    for (StateProperty prop : _properties) {
+      prop.print();
+    }
   }
 }

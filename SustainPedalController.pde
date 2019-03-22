@@ -2,7 +2,13 @@ SustainPedalController sustainPedalController = new SustainPedalController();
 
 class SustainPedalController {
   
+  public static final float MIN_LEVEL_TO_PEDAL = 0.2;
   public PedalEvent[] genPedaling(ArrayList<NoteEvent[]> noteLists, int endTime) {
+    if (pieceState.sustainPedalLevel.getValue() < MIN_LEVEL_TO_PEDAL) {
+      return new PedalEvent[0];
+    }
+    
+    
     int[] harmonyStartTimes = harmonyController.getHarmonyStartTimes();
     int[] numNotesPerHarmony = new int[harmonyStartTimes.length];
     
@@ -38,6 +44,7 @@ class SustainPedalController {
   private static final int MAX_NOTE_PER_HARMONY = 15;
   private static final int PEDAL_RELEASE_DURATION = 100; // in ms
   private static final int MIN_PEDAL_PRESS_DURATION = 100; // in ms
+  private static final int MIN_ACTIVE_PEDAL_VELOCITY = 30; // We technically do go lower.
   private PedalEvent[] genPedalingFromHarmonyBuckets(int[] harmonyStartTimes, int[] numNotesPerHarmony, int endTime) {
     ArrayList<PedalEvent> pedalEvents = new ArrayList<PedalEvent>();
     //boolean isPressed = false;
@@ -59,8 +66,9 @@ class SustainPedalController {
           min(numNotesPerHarmony[i], MAX_NOTE_PER_HARMONY),
           MIN_NOTE_PER_HARMONY,
           MAX_NOTE_PER_HARMONY,
-          PedalEvent.MIN_PEDAL_VELOCITY,
+          MIN_ACTIVE_PEDAL_VELOCITY,
           PedalEvent.MAX_PEDAL_VELOCITY));
+        pressVelocity = int(pieceState.sustainPedalLevel.getValue() * pressVelocity); 
         PedalEvent pressEvent = new PedalEvent(pressVelocity, harmStartTime + PEDAL_RELEASE_DURATION);
         pedalEvents.add(pressEvent);
         //println("Adding pedals: " + pressVelocity + " for bucket size " + numNotesPerHarmony[i]);

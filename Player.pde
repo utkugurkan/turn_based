@@ -57,7 +57,7 @@ class Player {
         println("Releasing sustain pedal.");
       }
       else {
-        println("Pressing sustain pedal.");
+        println("Pressing sustain pedal with velocity " + pedalingToPlay.getVelocity());
       }
       _midiBus.sendControllerChange(_midiChannel, SUSTAIN_PEDAL_CONTROL_NUMBER, pedalingToPlay.getVelocity()); // Send a controllerChange
     }
