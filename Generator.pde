@@ -50,10 +50,10 @@ class Generator {
     _busy = true; // Set busy until all the generated material is played (based on the end time).
     //GenerationMethod randomGenMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
     selectGenMethod();
+    if (_genMethod == null) {
+      println("_genMethod is NULL!!!!!!!");
+    }
     NoteEvent[] genResult = _genMethod.generateFromSeed(seed, _genMethodState);
-    //if (_genMethodState == null) {
-    //  println("Gen method is still null");
-    //}
     
     // Set the end time of the generated material. This Generator will become available
     // at _jobFinishTime.
@@ -75,6 +75,10 @@ class Generator {
   public void setState(GeneratorState state) {
     _genMethod = state.genMethod;
     _genMethodState = state.dataPacket;
+    if (_genMethod == null) {
+      setRandomGenerationMethod();
+    }
+    setNewRepeatData();
   }
   
   private void resetState() {
@@ -83,28 +87,27 @@ class Generator {
   }
   
   private void selectGenMethod() {
-    //if (_genMethod != null && random(1.0) <= _genMethodRepeatRate) {
-    //  return;
-    //}
-    //else {
-    //  _genMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
-    //}
-    
     // Repeated as many times as the target.
-    // So we can pick a new one.
-    if (_genMethodRepeatCurrentCount == _genMethodRepeatTarget) {
-      //println("ATTENTION!!! Picking new generation method.");
-      _genMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
+    if (_genMethodRepeatCurrentCount >= _genMethodRepeatTarget) {
+      //println("Picking new generation method.");
+      setRandomGenerationMethod();
+      setNewRepeatData();
+    }
+  }
+  
+  private void setRandomGenerationMethod() {
+    _genMethod = GEN_METHODS[int(random(GEN_METHODS.length))];
+  }
+  
+  private void setNewRepeatData() {
       int minRepetition = _genMethod.getMinRecommendedGenerationCount();
       int maxRepetition = _genMethod.getMaxRecommendedGenerationCount();
       int halfRange = (maxRepetition - minRepetition) / 2;
       int mean = halfRange + minRepetition;
       
-      
       _genMethodRepeatTarget = int(randomTruncatedGaussian(minRepetition, maxRepetition, mean, halfRange));
       println("Generation method will be repeated for times: " + _genMethodRepeatTarget);
       _genMethodRepeatCurrentCount = 0;
-    }
   }
   
   
