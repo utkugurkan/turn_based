@@ -69,10 +69,6 @@ class GenMelody extends GenerationMethod {
       }
       //println("Template length is " + template.length + " and curIndex is " + curIndex);
       int fractionIndex = template[curIndex].length;
-      
-      //NoteEvent[] harmNotes = harmonyController.getHarmonyAtTime(curTime);
-      //int harmIndex = int(random(harmNotes.length));
-      //int newPitch = getClosestPitch(calculateKey(harmNotes[harmIndex]), lastNote);
   
       int duration = int(ALLOWABLE_FRACTIONS[fractionIndex] * unitNoteLength);
       if (!template[curIndex].isRest) {
@@ -86,10 +82,12 @@ class GenMelody extends GenerationMethod {
         else {
           Map.Entry<Integer, NoteEvent> upperBound = startTimeToSeedNote.ceilingEntry(curTime);
           if (upperBound != null && abs(upperBound.getKey() - curTime) < MAX_SEED_PITCH_USAGE_DISTANCE) {
+            // Note: currently not using this. Instead we're only using the seed note from the earlier harmony (see above).
             //println("USING SEED NOTE IN MELODYYY");
           }
         }
         
+        newPitch = fitPitchInLimits(newPitch);
         lastNote = new NoteEvent(newPitch, int(random(NoteEvent.VELOCITY_MIN, NoteEvent.VELOCITY_MAX)), curTime, duration);
         gen.add(lastNote);
       }
@@ -104,73 +102,6 @@ class GenMelody extends GenerationMethod {
     NoteEvent[] genResultArr = new NoteEvent[gen.size()];
     return gen.toArray(genResultArr);
   }
-  
-  //@Override
-  //NoteEvent[] generateFromSeed(NoteEvent[] seed, DataPacketSet dataSet) {
-  //  println("Generating melody.");
-    
-  //  TreeMap<Integer, NoteEvent[]> harmonizedSeed = harmonyController.getHarmonizedSeed();
-  //  if (harmonizedSeed.isEmpty()) {
-  //    return new NoteEvent[0];
-  //  }
-    
-  //  int unitNoteLength = int(map(
-  //      pieceState.speed.getValue(),
-  //      StateProperty.MAX_VAL,
-  //      StateProperty.MIN_VAL, 
-  //      MIN_UNIT_NOTE_DURATION, 
-  //      MAX_UNIT_NOTE_DURATION));
-        
-    
-  //  int endTime = getEndTime(seed);
-   
-  //  ArrayList<NoteEvent> gen = new ArrayList<NoteEvent>();
-  //  // We keep track of both the time that we have filled until
-  //  // as well as where we are in the harmonized seed.
-  //  int curTime = 0;
-    
-  //  // Set to a random reference point note at first, this will be updated in each iteration.
-  //  NoteEvent lastNote = new NoteEvent(calculatePitch(Key.A, int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), 0, 0, 0);
-    
-  //  while (curTime < endTime) {
-  //    //int fractionIndex = int(random(ALLOWABLE_FRACTIONS.length));
-  //    int remainingTime = endTime - curTime;
-      
-  //    // Calculate the acceptable bounds for fractions.
-  //    int minFractionIndex = -1; // Min index has the greatest fractions.
-  //    int maxFractionIndex = -1; // Max index has the smallest fractions.
-  //    for (int i = 0; i < ALLOWABLE_FRACTIONS.length; ++i) {
-  //      if (ALLOWABLE_FRACTIONS[i] * unitNoteLength < remainingTime) {
-  //        minFractionIndex = i;
-  //        break;
-  //      }
-  //    }
-      
-  //    for (int i = ALLOWABLE_FRACTIONS.length - 1; i >= 0; --i) {
-  //      if (ALLOWABLE_FRACTIONS[i] * unitNoteLength > MIN_NOTE_DURATION) {
-  //        maxFractionIndex = i;
-  //        break;
-  //      }
-  //    }
-      
-  //    if (minFractionIndex == -1 || maxFractionIndex == -1) {
-  //      break;
-  //    }
-  //    int fractionIndex = int(random(minFractionIndex, maxFractionIndex));
-      
-  //    NoteEvent[] harmNotes = harmonyController.getHarmonyAtTime(curTime);
-  //    int harmIndex = int(random(harmNotes.length));
-  //    int newPitch = getClosestPitch(calculateKey(harmNotes[harmIndex]), lastNote);
-      
-  //    int duration = int(ALLOWABLE_FRACTIONS[fractionIndex] * unitNoteLength);
-  //    lastNote = new NoteEvent(newPitch, int(random(NoteEvent.VELOCITY_MIN, NoteEvent.VELOCITY_MAX)), curTime, duration);
-  //    gen.add(lastNote);
-  //    curTime += duration;
-  //  }
-    
-  //  NoteEvent[] genResultArr = new NoteEvent[gen.size()];
-  //  return gen.toArray(genResultArr);
-  //}
   
   // TODO: Incorporate directions.
   private static final int DIRECTIONAL_CONFIDENCE_INITIAL_MIN = 3;
@@ -421,17 +352,4 @@ class GenMelody extends GenerationMethod {
       }
     }
   }
-  
-  //private class TemplateState {
-  //  public TemplateState(PatternEntity[] templateIn, int curIndexIn, int unitNoteLengthIn, NoteEvent prevNoteIn) {
-  //    template = templateIn;
-  //    curIndex = curIndexIn;
-  //    unitNoteLength = unitNoteLengthIn;
-  //    prevNote = prevNoteIn;
-  //  }
-  //  public PatternEntity[] template;
-  //  public int curIndex;
-  //  public int unitNoteLength;
-  //  public NoteEvent prevNote;
-  //}
 }

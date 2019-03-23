@@ -91,3 +91,15 @@ TreeMap<Integer, NoteEvent> getStartTimeOrderedMap(NoteEvent[] seed) {
   }
   return res;
 }
+
+private int fitPitchInLimits(int pitch) {
+  while (pitch > NoteEvent.PITCH_MAX) {
+    pitch -= 12;
+  }
+  
+  while (pitch < NoteEvent.PITCH_MIN) {
+    pitch += 12;
+  }
+  
+  return pitch;
+}

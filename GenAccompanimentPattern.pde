@@ -102,7 +102,7 @@ class GenAccompanimentPattern extends GenerationMethod {
           closestPitchDiff = thisPitchDiff;
         }
       }
-      int newPitch = adjustPitch(newNote.getPitch() + closestPitchDiff);
+      int newPitch = fitPitchInLimits(newNote.getPitch() + closestPitchDiff);
       newNote.setPitch(newPitch);
       
       gen.add(newNote);
@@ -187,81 +187,6 @@ class GenAccompanimentPattern extends GenerationMethod {
     PatternEntity[] patternArr = new PatternEntity[pattern.size()];
     return new TemplateState(pattern.toArray(patternArr), 0, 0, startingNote);
   }
-
-  //private static final float NOTE_LENGTH_BASE_STANDARD_DEVIATION = 0.5f;
-  //private static final float PITCH_VARIATION_STANDARD_DEVIATION = 6f;
-  //private static final float PITCH_VARIATION_MEAN = 0f;
-  //private PatternEntity[] calculatePattern(DataPacketSet dataSet) {
-  //  DataPacket[] data = dataSet.data;
-  //  if (data != null && data.length > 0 && data[0].type == PatternEntity[].class &&
-  //    random(1f) > PATTERN_CHANGE_PROBABILITY) {
-  //    println("Using the same pattern.");
-  //    return (PatternEntity[])data[0].value;
-  //  } else {
-  //    println("Not using the same pattern.");
-  //    if (data != null && data.length > 0) {
-  //      println("Data type: " + data[0].type);
-  //    }
-  //  }
-    
-  //  //int patternLength = int(random(MIN_PATTERN_LENGTH, MAX_PATTERN_LENGTH));
-    
-  //  //ArrayList<PatternEntity> pattern = new ArrayList<PatternEntity>();
-  //  //int curLength = 0;
-  //  //while (curLength < patternLength) {
-  //  //  float minVal = MIN_PATTERN_ELEMENT_LENGTH;
-  //  //  float maxVal = min(patternLength - curLength, MAX_PATTERN_ELEMENT_LENGTH) + 0.5;
-      
-  //  //  float noteLengthMean = map(
-  //  //    pieceState.speed.getValue(), 
-  //  //    pieceState.speed.MIN_VAL,
-  //  //    pieceState.speed.MAX_VAL,
-  //  //    maxVal,
-  //  //    minVal);
-        
-  //  //  //println("Note length mean: " + noteLengthMean);
-      
-  //  //  // The farther the speed is from the average speed, the smaller the standard deviation is.
-  //  //  float speedPropMean = (pieceState.speed.MAX_VAL - pieceState.speed.MIN_VAL) / 2f;
-  //  //  float speedDiffFromMeanSpeed = abs(speedPropMean - pieceState.speed.getValue());
-  //  //  float noteLengthStdDev = map(
-  //  //    speedDiffFromMeanSpeed,
-  //  //    speedPropMean,
-  //  //    0f,
-  //  //    0f,
-  //  //    NOTE_LENGTH_BASE_STANDARD_DEVIATION);
-  //  //  //println("Standard dev: " + noteLengthStdDev);
-      
-  //  //  int noteLength = int(randomTruncatedGaussian(minVal, maxVal, noteLengthMean, noteLengthStdDev));
-  //  //  //int noteLength = 1;
-  //  //  //println("Note length: " + noteLength);
-      
-  //  //  int pitchVariance = int(randomTruncatedGaussian(
-  //  //    MIN_PITCH_VARIATION_BETWEEN_NOTES,
-  //  //    MAX_PITCH_VARIATION_BETWEEN_NOTES, 
-  //  //    PITCH_VARIATION_MEAN, 
-  //  //    PITCH_VARIATION_STANDARD_DEVIATION));
-      
-  //  //  pattern.add(new PatternEntity(pitchVariance, noteLength, false));
-  //  //  curLength += noteLength;
-  //  //}
-    
-  //  //println("Generated pattern length: " + pattern.size());
-  //  //print("Generated pattern: ");
-  //  //for (PatternEntity ent : pattern) {
-  //  //  ent.print();
-  //  //}
-    
-  //  //PatternEntity[] patternArr = new PatternEntity[pattern.size()];
-  //  //return pattern.toArray(patternArr);
-  //}
-  
-  //// Sets the state data that was passed in
-  //// to the generation method.
-  //private void setData(DataPacketSet dataSet, PatternEntity[] pattern) {
-  //  dataSet.data = new DataPacket[1];
-  //  dataSet.data[0] = new DataPacket(pattern);
-  //}
   
   // Use this function to get the pitch to use, given the pitch of the previous note
   // as well as the pitch difference as determined by the pattern.
@@ -278,18 +203,6 @@ class GenAccompanimentPattern extends GenerationMethod {
       suggestedPitch += PITCH_RANGE_FIT_FACTOR;
     }
     return suggestedPitch;
-  }
-  
-  private int adjustPitch(int pitch) {
-    while (pitch > NoteEvent.PITCH_MAX) {
-      pitch -= 12;
-    }
-    
-    while (pitch < NoteEvent.PITCH_MIN) {
-      pitch += 12;
-    }
-    
-    return pitch;
   }
   
   private TemplateState unpackData(DataPacketSet dataSet) {
