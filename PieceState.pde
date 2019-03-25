@@ -21,7 +21,8 @@ public class PieceState {
       resetProperty(prop);
     }
     
-    //loudness.setValue(0.0f);
+    //loudness.setValue(1.0f);
+    //speed.setValue(0.1f);
     printAllProperties();
   }
   
@@ -35,7 +36,8 @@ public class PieceState {
       }
     }
      
-    //loudness.setValue(0.0f);
+    //loudness.setValue(1.0f);
+    //speed.setValue(0.1f);
     printAllProperties();
   }
   

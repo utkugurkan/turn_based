@@ -62,10 +62,17 @@ class GenMelody extends GenerationMethod {
     
     TreeMap<Integer, NoteEvent> startTimeToSeedNote = getStartTimeOrderedMap(seed);
     
+    int defaultVelocity = int(map(
+      pieceState.loudness.getValue(), 
+      StateProperty.MIN_VAL, 
+      StateProperty.MAX_VAL,
+      NoteEvent.VELOCITY_MIN,
+      NoteEvent.VELOCITY_MAX));
+    
     while (curTime < endTime) {
       // Set to a random reference point to start a new melodic line.
       if (curIndex == 0) {
-        lastNote = new NoteEvent(calculatePitch(getRandomKey(), int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), 40, 0, 0);
+        lastNote = new NoteEvent(calculatePitch(getRandomKey(), int(random(MIN_OCTAVE, MAX_OCTAVE + 0.5))), defaultVelocity, 0, 0);
       }
       //println("Template length is " + template.length + " and curIndex is " + curIndex);
       int fractionIndex = template[curIndex].length;
@@ -88,7 +95,7 @@ class GenMelody extends GenerationMethod {
         }
         
         newPitch = fitPitchInLimits(newPitch);
-        lastNote = new NoteEvent(newPitch, int(random(NoteEvent.VELOCITY_MIN, NoteEvent.VELOCITY_MAX)), curTime, duration);
+        lastNote = new NoteEvent(newPitch, defaultVelocity, curTime, duration);
         gen.add(lastNote);
       }
       

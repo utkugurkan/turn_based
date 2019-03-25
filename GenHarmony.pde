@@ -14,6 +14,13 @@ class GenHarmony extends GenerationMethod {
     TreeMap<Integer, NoteEvent[]> harms = harmonyController.getHarmonizedSeed();
     ArrayList<NoteEvent> gen = new ArrayList<NoteEvent>();
     
+    int defaultVelocity = int(map(
+      pieceState.loudness.getValue(), 
+      StateProperty.MIN_VAL, 
+      StateProperty.MAX_VAL,
+      NoteEvent.VELOCITY_MIN,
+      NoteEvent.VELOCITY_MAX));
+    
     for(Map.Entry<Integer, NoteEvent[]> entry : harms.entrySet()) {
       Integer startTime = entry.getKey();
       NoteEvent[] notes = entry.getValue();
@@ -21,6 +28,7 @@ class GenHarmony extends GenerationMethod {
       for (NoteEvent note : notes) {
         NoteEvent newNote = new NoteEvent(note);
         newNote.setStartTime(startTime);
+        newNote.setVelocity(defaultVelocity);
         gen.add(newNote);
       }
     }

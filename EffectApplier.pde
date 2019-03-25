@@ -1,6 +1,6 @@
 // The order matters in this array!!
 final EffectMethod[] ENFORCED_EFFECTS = {
-  new EffectDynamicRangeEnforcer(),
+  //new EffectDynamicRangeEnforcer(),
   new EffectVaryKeyPress(),
   new EffectTonalityEnforcer()};
 
