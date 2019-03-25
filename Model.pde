@@ -220,7 +220,7 @@ class Model {
   final int NEW_SEED_MAX_PITCH = 65;
   final int NEW_SEED_NOTE_VELOCITY = 80;
   
-  private NoteEvent[] generateNewSeed() {
+  public NoteEvent[] generateNewSeed() {
     int noteCount = int(random(NEW_SEED_MIN_NOTE_COUNT, NEW_SEED_MAX_NOTE_COUNT));
     NoteEvent[] seed = new NoteEvent[noteCount];
     

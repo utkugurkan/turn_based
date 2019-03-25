@@ -29,6 +29,7 @@ void setup() {
   //player.addNotes(seed);
   
   model = new Model();
+  currentSeed = model.generateNewSeed();
   
   //PriorityQueue<NoteEvent> pq = new PriorityQueue<NoteEvent>(1, new SortNoteEventByStartTime());
   //pq.add(currentSeed[4]);

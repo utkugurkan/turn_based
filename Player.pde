@@ -45,7 +45,7 @@ class Player {
       NoteEvent noteToPlay = _notesToPlay.poll();
       // TODO: Get rid of this.
       //noteToPlay.setVelocity(30);
-      println("Playing " + noteToPlay.getPitch() + " with Velocity " + noteToPlay.getVelocity());
+      //println("Playing " + noteToPlay.getPitch() + " with Velocity " + noteToPlay.getVelocity());
       _midiBus.sendNoteOn(_midiChannel, noteToPlay.getPitch(), noteToPlay.getVelocity());
       _notesToStop.add(noteToPlay);
     }
