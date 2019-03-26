@@ -1,6 +1,7 @@
 StatePreset[] statePresets = new StatePreset[] {
   new EbbStatePreset(),
   new BlowingFeatherStatePreset(),
+  new QuietCounterpointStatePreset(),
 };
 
 abstract class StatePreset {
@@ -25,9 +26,9 @@ abstract class StatePreset {
     }
     
     if (genMethods != null && generators != null) {
-      for (int i = 0; i < generators.length; ++i) {
+      for (int i = 0; i < genMethods.length; ++i) {
         if (genMethods[i] != null) {
-          generators[i].setState(new GeneratorState(genMethods[i], null));
+          generators[i].setState(new GeneratorState(genMethods[i], new DataPacketSet()));
         }
       }
     } 
@@ -73,5 +74,38 @@ class BlowingFeatherStatePreset extends StatePreset {
     loudness.setTargetValue(0.05f);
     loudness.setChangeRatePerTurn(0.0f);
     loudness.setUpdateCountToReset(LENGTH);
+  }
+}
+
+class QuietCounterpointStatePreset extends StatePreset {
+  private static final int LENGTH = 15;
+  
+  public QuietCounterpointStatePreset() {
+    speed = new StateProperty("speed");
+    speed.setValue(0.54);
+    speed.setTargetValue(0.54);
+    speed.setChangeRatePerTurn(0.0f);
+    speed.setUpdateCountToReset(LENGTH);
+    
+    
+    loudness = new StateProperty("loudness");
+    loudness.setValue(0.016f);
+    loudness.setTargetValue(0.016f);
+    loudness.setChangeRatePerTurn(0.0f);
+    loudness.setUpdateCountToReset(LENGTH);
+    
+    tonality = new TonalityStateProperty("tonality");
+    tonality.setValue(0.938f);
+    tonality.setTargetValue(0.938f);
+    tonality.setChangeRatePerTurn(0.0f);
+    tonality.setUpdateCountToReset(LENGTH);
+    
+    noteDensity = new StateProperty("noteDensity");
+    noteDensity.setValue(0.5465);
+    noteDensity.setTargetValue(0.5465);
+    noteDensity.setChangeRatePerTurn(0.0f);
+    noteDensity.setUpdateCountToReset(LENGTH);
+    
+    genMethods = new GenerationMethod[] { new GenAccompanimentPattern(), new GenMelody(), new GenMelody() };
   }
 }
