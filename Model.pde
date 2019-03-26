@@ -322,7 +322,7 @@ class Model {
     }
   }
   
-  private static final float STATE_PRESET_USE_PROBABILITY = 1.0f; // 0.05f;
+  private static final float STATE_PRESET_USE_PROBABILITY = 0.05f;
   private void maybeMoveToStatePreset() {
     if (random(1.0f) > STATE_PRESET_USE_PROBABILITY) {
       return;

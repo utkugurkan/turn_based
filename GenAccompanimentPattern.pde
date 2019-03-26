@@ -61,53 +61,61 @@ class GenAccompanimentPattern extends GenerationMethod {
     
     int defaultVelocity = int(map(
       pieceState.loudness.getValue(), 
-      pieceState.loudness.MIN_VAL, 
-      pieceState.loudness.MAX_VAL,
+      StateProperty.MIN_VAL, 
+      StateProperty.MAX_VAL,
       NoteEvent.VELOCITY_MIN,
       NoteEvent.VELOCITY_MAX));
     int patternBeginningVelocity = defaultVelocity + 5;
       
     ArrayList<NoteEvent> gen = new ArrayList<NoteEvent>();
     while (curTime < seedTime) {
-      //println(curIndex);
-      int thisVelocity = defaultVelocity;
-      if (curIndex == 0) {
-        thisVelocity = patternBeginningVelocity;
-        curNote = getNewStartingNote();
-      }
-      // Create the new note with a potentially temporary pitch.
-      NoteEvent newNote = new NoteEvent(
-        calculatePitchInRange(curNote.getPitch(), pattern[curIndex].pitchDiff),
-        thisVelocity,
-        curTime,
-        pattern[curIndex].length * shortestNoteDuration);
-        
-      // Move the new note's pitch to a pitch from the current harmony.
-      // Pick from harmony the closest possible pitch.
-      NoteEvent[] curHarmony = harmonyController.getHarmonyAtTime(curTime);
+      int noteDuration = pattern[curIndex].length * shortestNoteDuration;
       
-      int closestPitchIndex = -1;
-      int closestPitchDiff = 200; // Just a high number
-      for (int i = 0; i < curHarmony.length; ++i) {
-        int thisPitchDiff = 
-          getClosestPitch(calculateKey(curHarmony[i]), newNote) - newNote.getPitch();
-        if (abs(thisPitchDiff) < abs(closestPitchDiff)) {
-          // If this would have been the same note as the previous,
-          // Only do it if there are no other options or based on the dice roll.
-          if (gen.size() > 0 && gen.get(gen.size() - 1).getPitch() == newNote.getPitch() + thisPitchDiff &&
-            (!(closestPitchIndex == -1 && i == curHarmony.length - 1) || random(1.0f) > CONSECUTIVE_SAME_NOTE_PROBABILITY)) {
-            continue;
-          }
-          closestPitchIndex = i;
-          closestPitchDiff = thisPitchDiff;
+      if (!pattern[curIndex].isRest) {
+        int thisVelocity = defaultVelocity;
+        if (curIndex == 0) {
+          thisVelocity = patternBeginningVelocity;
+          curNote = getNewStartingNote();
         }
+        // Create the new note with a potentially temporary pitch.
+        NoteEvent newNote = new NoteEvent(
+          calculatePitchInRange(curNote.getPitch(), pattern[curIndex].pitchDiff),
+          thisVelocity,
+          curTime,
+          noteDuration);
+          
+        // Move the new note's pitch to a pitch from the current harmony.
+        // Pick from harmony the closest possible pitch.
+        NoteEvent[] curHarmony = harmonyController.getHarmonyAtTime(curTime);
+        
+        int closestPitchIndex = -1;
+        int closestPitchDiff = 200; // Just a high number
+        for (int i = 0; i < curHarmony.length; ++i) {
+          int thisPitchDiff = 
+            getClosestPitch(calculateKey(curHarmony[i]), newNote) - newNote.getPitch();
+          if (abs(thisPitchDiff) < abs(closestPitchDiff)) {
+            // If this would have been the same note as the previous,
+            // Only do it if there are no other options or based on the dice roll.
+            if (gen.size() > 0 && gen.get(gen.size() - 1).getPitch() == newNote.getPitch() + thisPitchDiff &&
+              (!(closestPitchIndex == -1 && i == curHarmony.length - 1) || random(1.0f) > CONSECUTIVE_SAME_NOTE_PROBABILITY)) {
+              continue;
+            }
+            closestPitchIndex = i;
+            closestPitchDiff = thisPitchDiff;
+          }
+        }
+        int newPitch = fitPitchInLimits(newNote.getPitch() + closestPitchDiff);
+        newNote.setPitch(newPitch);
+        
+        gen.add(newNote);
+        curNote = newNote;
       }
-      int newPitch = fitPitchInLimits(newNote.getPitch() + closestPitchDiff);
-      newNote.setPitch(newPitch);
+      else {
+        println("Adding rest");
+      }
       
-      gen.add(newNote);
-      curNote = newNote;
-      curTime += newNote.getDuration();
+      // Do the increment regardless of whether the note is a rest or not.
+      curTime += noteDuration;
       curIndex = (curIndex + 1) % pattern.length;
     }
 
@@ -173,7 +181,9 @@ class GenAccompanimentPattern extends GenerationMethod {
         PITCH_VARIATION_MEAN, 
         PITCH_VARIATION_STANDARD_DEVIATION));
       
-      pattern.add(new PatternEntity(pitchVariance, noteLength, false));
+      boolean isRest = patternElementShouldBeRest();
+      
+      pattern.add(new PatternEntity(pitchVariance, noteLength, isRest));
       curLength += noteLength;
     }
     
@@ -182,6 +192,15 @@ class GenAccompanimentPattern extends GenerationMethod {
     //for (PatternEntity ent : pattern) {
     //  ent.print();
     //}
+    
+    // TODO: Remove this when done testing.
+    //int restCount = 0;
+    //for (PatternEntity ent : pattern) {
+    //  if (ent.isRest) {
+    //    ++restCount;
+    //  }
+    //}
+    //println("ATTN! Out of " + pattern.size() + " notes, " + restCount + " of them were rests.");
     
     NoteEvent startingNote = getNewStartingNote();
     PatternEntity[] patternArr = new PatternEntity[pattern.size()];
@@ -236,5 +255,39 @@ class GenAccompanimentPattern extends GenerationMethod {
   
   private NoteEvent getNewStartingNote() {
     return new NoteEvent(calculatePitch(getRandomKey(), int(random(MIN_STARTING_OCTAVE, MAX_STARTING_OCTAVE + 0.5))), 40, 0, 0);
+  }
+  
+  private static final float MIN_REST_PROBABILITY = 0.05f;
+  private static final float MAX_REST_PROBABILITY = 0.20f;
+  // This is the speed at which the most rests will occur.
+  private static final float MAX_REST_POINT_IN_SPEED_PROP = 0.6f;
+  private static final float REST_STD_DEV = 0.02f;
+  private boolean patternElementShouldBeRest() {
+    
+    float speedOffset = abs(MAX_REST_POINT_IN_SPEED_PROP - pieceState.speed.getValue());
+    // Mean of the gaussian depends on how far the current speed is from the point
+    // that would have the highest rest probability.
+    float mean = map(
+      speedOffset,
+      0.0f,
+      MAX_REST_POINT_IN_SPEED_PROP,
+      MAX_REST_PROBABILITY,
+      MIN_REST_PROBABILITY);
+      
+    float restProb = randomTruncatedGaussian(
+      MIN_REST_PROBABILITY, 
+      MAX_REST_PROBABILITY,
+      mean,
+      REST_STD_DEV);
+      
+    //println("Rest probability is : " + restProb);
+    //map(
+    //  pieceState.speed.getValue(),
+    //  StateProperty.MIN_VAL,
+    //  StateProperty.MAX_VAL,
+    //  MIN_REST_PROBABILITY,
+    //  MAX_REST_PROBABILITY);
+      
+    return random(1.0f) <= restProb;
   }
 }
