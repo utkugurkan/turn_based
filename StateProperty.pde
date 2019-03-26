@@ -12,6 +12,19 @@ public class StateProperty {
     _updateCountToReset = 1;
   }
   
+  public void copyParameters(StateProperty other) {
+    if (other == null) {
+      println("You are NULLLL");
+      return;
+    }
+    println("Copy parameters went through");
+    _currentValue = other._currentValue;
+    _changeRatePerTurn = other._changeRatePerTurn;
+    _targetValue = other._targetValue;
+    _updateCountAtTarget = other._updateCountAtTarget;
+    _updateCountToReset = other._updateCountToReset;
+  }
+  
   public void print() {
     println(_name + " value: " + getValue() + ", change rate: " + getChangeRatePerTurn() + 
     ", target: " + getTargetValue() + ", updates at target: " + _updateCountAtTarget + "/" + _updateCountToReset);
@@ -31,7 +44,7 @@ public class StateProperty {
     }
   }
   
-  public void reset() {
+  public void resetProgress() {
     _updateCountAtTarget = 0;
   }
   

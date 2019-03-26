@@ -27,7 +27,7 @@ class Model {
       updateSystemsPerTurnFrequency(seed);
       
       if (rhythmController.isEnabled()) {
-        println("Using RhythmController to quantize notes.");
+        //println("Using RhythmController to quantize notes.");
         NoteEvent[] quantizedSeed = rhythmController.quantizeSeed(seed);
         allGenResults = genNextTurnMaterial(quantizedSeed);
       }
@@ -163,9 +163,12 @@ class Model {
     
     if (needNewSeed(seed)) {
       println("Resetting seed!!");
+      ++_totalSeedResetCount;
       for (Generator gen : _generators) {
         gen.dropStateData();
       }
+      maybeMoveToStatePreset();
+      
       _turnCountSinceSeedReset = 0;
       return generateNewSeed();
     }
@@ -203,7 +206,9 @@ class Model {
     // Increment the number of turns
     ++_turnCountSinceSeedReset;
     
-    println();
+    //println();
+    println("Turn count since last seed reset: " + _turnCountSinceSeedReset);
+    println("Total seed reset count: " + _totalSeedResetCount);
     //println("New seed: (turns since last reset is " + _turnCountSinceSeedReset + ") ");
     //printNoteEvents(seedResultArr);
     
@@ -235,10 +240,10 @@ class Model {
     return seed;
   }
   
-  private static final int TURN_COUNT_BEFORE_SEED_RECONSIDERATION = 15;
+  private static final int TURN_COUNT_BEFORE_SEED_RECONSIDERATION = 15; // 15
   // The probability of resetting the seed after the above threshold count will increase
   // by this much each turn.
-  private static final float RECONSIDERATION_SEED_RESET_PROBABILITY_INCREASE_RATE = 0.05;
+  private static final float RECONSIDERATION_SEED_RESET_PROBABILITY_INCREASE_RATE = 0.05f; // 0.05f
   private boolean needNewSeed(NoteEvent[] seed) {
     return seedHasExtremeLocalization(seed) || 
       (_turnCountSinceSeedReset > TURN_COUNT_BEFORE_SEED_RECONSIDERATION && 
@@ -317,6 +322,16 @@ class Model {
     }
   }
   
+  private static final float STATE_PRESET_USE_PROBABILITY = 1f; // 0.05f
+  private void maybeMoveToStatePreset() {
+    if (random(1.0f) > STATE_PRESET_USE_PROBABILITY) {
+      return;
+    }
+    //println("Applying state preset.");
+    int idx = int(random(statePresets.length));
+    statePresets[idx].applyPreset(pieceState, _generators);
+  }
+  
   private static final float REMOVAL_FROM_SEED_ODDS = 0.2f;
   private static final float ADDITION_TO_SEED_ODDS = 0.4f;
   private static final float USE_OLD_GEN_STATE_PROBABILITY = 0.1f;
@@ -325,6 +340,7 @@ class Model {
   private int _turnLength;
   private int _turnEndTime;
   private int _turnCountSinceSeedReset = 0;
+  private int _totalSeedResetCount = 0;
   private Generator[] _generators;
   private ArrayList<ArrayList<GeneratorState>> _oldDataPackets;
 }

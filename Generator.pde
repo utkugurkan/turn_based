@@ -80,6 +80,7 @@ class Generator {
     }
     setNewRepeatData();
   }
+
   
   private void resetState() {
     _busy = false;

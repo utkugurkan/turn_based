@@ -2,15 +2,15 @@ public class TonalityStateProperty extends StateProperty {
   
   public TonalityStateProperty(String name) {
     super(name);
-    reset();
+    resetProgress();
   }
   
   private Key _currentKey;
   private int _scaleIndex;
   
   @Override
-  public void reset() {
-    super.reset();
+  public void resetProgress() {
+    super.resetProgress();
     
     _currentKey = getRandomKey(); 
     //println(SCALES[0].length);
