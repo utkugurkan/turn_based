@@ -111,7 +111,7 @@ class GenAccompanimentPattern extends GenerationMethod {
         curNote = newNote;
       }
       else {
-        println("Adding rest");
+        //println("Adding rest");
       }
       
       // Do the increment regardless of whether the note is a rest or not.

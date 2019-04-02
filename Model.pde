@@ -86,6 +86,8 @@ class Model {
     pieceState.update();
     // Calculate harmonies.
     harmonyController.update(seed);
+    
+    updateProbabilisticallyAppliedEffects();
   }
   
   private ArrayList<NoteEvent[]> genNextTurnMaterial(NoteEvent[] seed) {
@@ -134,6 +136,8 @@ class Model {
         applyAllEnforcedEffects(genResult);
         // Apply individual effect.
         applyRandomEffect(genResult);
+        // Try to apply the probabilistic effects.
+        applyProbabilisticallyAppliedEffects(genResult);
         
         // Update the generator's job finish time.
         gen.setJobFinishTime(getEndTime(genResult));
