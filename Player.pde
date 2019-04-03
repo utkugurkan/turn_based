@@ -61,12 +61,8 @@ class Player {
   private void playSustainPedal() {
     while (_sustainPedalingToPlay.peek() != null && millis() >= _sustainPedalingToPlay.peek().getStartTime()) {
       PedalEvent pedalingToPlay = _sustainPedalingToPlay.poll();
-      if (pedalingToPlay.getVelocity() <= PedalEvent.MIN_PEDAL_VELOCITY) {
-        //println("Releasing sustain pedal.");
-      }
-      else {
-        //println("Pressing sustain pedal with velocity " + pedalingToPlay.getVelocity());
-      }
+
+      //println("Pressing sustain pedal with velocity " + pedalingToPlay.getVelocity());
       _midiBus.sendControllerChange(_midiChannel, SUSTAIN_PEDAL_CONTROL_NUMBER, pedalingToPlay.getVelocity()); // Send a controllerChange
     }
   }

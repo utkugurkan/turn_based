@@ -5,8 +5,18 @@ class SustainPedalController {
   public static final float MIN_LEVEL_TO_PEDAL = 0.2;
   public PedalEvent[] genPedaling(ArrayList<NoteEvent[]> noteLists, int endTime) {
     if (pieceState.sustainPedalLevel.getValue() < MIN_LEVEL_TO_PEDAL) {
+      
       // Return pedal release
-      return new PedalEvent[] { new PedalEvent(PedalEvent.MIN_PEDAL_VELOCITY, 0) };
+      ArrayList<PedalEvent> res = new ArrayList<PedalEvent>();
+      ArrayList<PedalEvent> releasePedaling = 
+        getSmoothPedalChange(_prevVelocity, PedalEvent.MIN_PEDAL_VELOCITY, 0, PEDAL_RELEASE_DURATION);
+        
+      addPedalingToList(res, releasePedaling);
+      
+      PedalEvent[] resArr = new PedalEvent[res.size()];
+      return res.toArray(resArr);
+      
+      //return new PedalEvent[] { new PedalEvent(PedalEvent.MIN_PEDAL_VELOCITY, 0) };
     }
     
     
@@ -46,8 +56,9 @@ class SustainPedalController {
   private static final int PEDAL_RELEASE_DURATION = 100; // in ms
   private static final int MIN_PEDAL_PRESS_DURATION = 100; // in ms
   private static final int MIN_ACTIVE_PEDAL_VELOCITY = 30; // We technically do go lower.
-  private static final float NOTE_COUNT_CONTRIBUTION_CONSTANT = 0.5f;
-  private static final float PIECE_STATE_CONTRIBUTION_CONSTANT = 0.5f;
+  private static final float NOTE_COUNT_CONTRIBUTION_CONSTANT = 0.2f;
+  private static final float SUSTAIN_PEDAL_LEVEL_CONTRIBUTION_CONSTANT = 0.2f;
+  private static final float LOUDNESS_LEVEL_CONTRIBUTION_CONSTANT = 0.6f;
   // Calculate a pedal velocity based on the note count during a period as well as the piece state property.
   
   private PedalEvent[] genPedalingFromHarmonyBuckets(int[] harmonyStartTimes, int[] numNotesPerHarmony, int endTime) {
@@ -55,8 +66,11 @@ class SustainPedalController {
     //boolean isPressed = false;
     for (int i = 0; i < harmonyStartTimes.length; ++i) {
       int harmStartTime = harmonyStartTimes[i];
-      PedalEvent releaseEvent = new PedalEvent(PedalEvent.MIN_PEDAL_VELOCITY, harmStartTime);
-      pedalEvents.add(releaseEvent);
+      ArrayList<PedalEvent> releasePedaling = 
+        getSmoothPedalChange(_prevVelocity, PedalEvent.MIN_PEDAL_VELOCITY, harmStartTime, PEDAL_RELEASE_DURATION);
+      addPedalingToList(pedalEvents, releasePedaling);
+      //PedalEvent releaseEvent = new PedalEvent(PedalEvent.MIN_PEDAL_VELOCITY, harmStartTime);
+      //pedalEvents.add(releaseEvent);
       
       int harmEndTime;
       if (i + 1 < harmonyStartTimes.length) {
@@ -73,8 +87,15 @@ class SustainPedalController {
           MAX_NOTE_PER_HARMONY,
           MIN_ACTIVE_PEDAL_VELOCITY,
           PedalEvent.MAX_PEDAL_VELOCITY));
-        int pressVelocityBasedOnPieceState = int(map(
+        int pressVelocityBasedOnPedalLevel = int(map(
           pieceState.sustainPedalLevel.getValue(),
+          StateProperty.MIN_VAL,
+          StateProperty.MAX_VAL,
+          MIN_ACTIVE_PEDAL_VELOCITY,
+          PedalEvent.MAX_PEDAL_VELOCITY));
+          
+        int pressVelocityBasedOnLoudnessLevel = int(map(
+          pieceState.loudness.getValue(),
           StateProperty.MIN_VAL,
           StateProperty.MAX_VAL,
           MIN_ACTIVE_PEDAL_VELOCITY,
@@ -82,10 +103,18 @@ class SustainPedalController {
           
         int finalPressVelocity = 
           int(pressVelocityBasedOnNoteCount * NOTE_COUNT_CONTRIBUTION_CONSTANT + 
-          pressVelocityBasedOnPieceState * PIECE_STATE_CONTRIBUTION_CONSTANT);
+          pressVelocityBasedOnPedalLevel * SUSTAIN_PEDAL_LEVEL_CONTRIBUTION_CONSTANT +
+          pressVelocityBasedOnLoudnessLevel * LOUDNESS_LEVEL_CONTRIBUTION_CONSTANT);
+        
+        // The time to start pressing.
+        int pressTime = harmStartTime + PEDAL_RELEASE_DURATION;
           
-        PedalEvent pressEvent = new PedalEvent(finalPressVelocity, harmStartTime + PEDAL_RELEASE_DURATION);
-        pedalEvents.add(pressEvent);
+        ArrayList<PedalEvent> pressPedaling = 
+          getSmoothPedalChange(_prevVelocity, finalPressVelocity, pressTime, MIN_PEDAL_PRESS_DURATION);
+        addPedalingToList(pedalEvents, pressPedaling);
+        
+        //PedalEvent pressEvent = new PedalEvent(finalPressVelocity, pressTime);
+        //pedalEvents.add(pressEvent);
         //println("Adding pedals: " + pressVelocity + " for bucket size " + numNotesPerHarmony[i]);
       }
       else {
@@ -97,5 +126,15 @@ class SustainPedalController {
     return pedalEvents.toArray(resArr);
   }
   
+  private void addPedalingToList(ArrayList<PedalEvent> pedaling, PedalEvent toAdd) {
+    _prevVelocity = toAdd.getVelocity();
+    pedaling.add(toAdd);
+  }
   
+  private void addPedalingToList(ArrayList<PedalEvent> pedaling, ArrayList<PedalEvent> toAdd) {
+    _prevVelocity = toAdd.get(toAdd.size() - 1).getVelocity();
+    pedaling.addAll(toAdd);
+  }
+
+  private int _prevVelocity = 0;
 }

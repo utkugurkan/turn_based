@@ -22,7 +22,8 @@ public class PieceState {
     }
     
     //tonality.setValue(1.0f);
-    //speed.setValue(0.9f);
+    //speed.setValue(0.2f);
+    //loudness.setValue(0.2f);
     printAllProperties();
   }
   
@@ -37,7 +38,8 @@ public class PieceState {
     }
      
     //tonality.setValue(1.0f);
-    //speed.setValue(0.9f);
+    //speed.setValue(0.2f);
+    //loudness.setValue(0.2f);
     printAllProperties();
   }
   

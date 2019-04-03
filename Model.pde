@@ -37,6 +37,11 @@ class Model {
       
       // Generate pedaling.
       PedalEvent[] sustainPedaling = sustainPedalController.genPedaling(allGenResults, _turnLength);
+      //for (PedalEvent ped : sustainPedaling) {
+      //  if (ped.getVelocity() == 0) {
+      //    println("Rest has reached the model.");
+      //  }
+      //}
       PedalEvent[] unaCordaPedaling = unaCordaPedalController.genPedaling();
       
       // Generate new seed
