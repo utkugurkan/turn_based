@@ -9,3 +9,11 @@ float randomTruncatedGaussian(float rangeMin, float rangeMax, float mean, float 
 float randomGaussian(float mean, float stdDev) {
   return randomGaussian() * stdDev + mean;
 }
+
+// Returns a random value that contrasts the given value based on given parameters.
+float randomContrastingValue(float value, float rangeMin, float rangeMax, float stdDev) {
+  float rangeCenter = (rangeMax - rangeMin) / 2 + rangeMin;
+  float valueDiff = value - rangeCenter;
+  float contrastCenter = rangeCenter - valueDiff;
+  return randomTruncatedGaussian(rangeMin, rangeMax, contrastCenter, stdDev);
+}

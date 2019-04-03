@@ -24,7 +24,7 @@ void setup() {
   
   //println("End of seed: " + currentSeed[4].getEndTime());
   
-  int midiOutputDevice = 2;
+  int midiOutputDevice = 1;
   player = new Player(midiOutputDevice, 1);
   //player.addNotes(seed);
   

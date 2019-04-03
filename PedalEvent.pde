@@ -42,49 +42,23 @@ ArrayList<PedalEvent> getSmoothPedalChange(int startingVelocity, int finalVeloci
   
   // Lerp method.
   
-  int diff = (finalVelocity - startingVelocity) * -1;
-  ArrayList<Integer> diffList = new ArrayList<Integer>();
-  diffList.add(diff);
-  while (abs(diff) > 1) {
-    float newDiff = lerp(diff, 0f, INTERPOLATION_AMOUNT_FOR_SMOOTH_PEDAL_CHANGE);
-    diff = int(newDiff);
-    diffList.add(diff);
-  }
-  
-  int divisionCount = diffList.size();
-  int divisionLength = changeDuration / divisionCount;
-  
-  ArrayList<PedalEvent> res = new ArrayList<PedalEvent>();
-  for (int i = 0; i < divisionCount; ++i) {
-    int velocity = diffList.get(i) + finalVelocity;
-    int time = baseTime + i * divisionLength;
-    
-    PedalEvent pedal = new PedalEvent(velocity, time);
-    res.add(pedal);
-  }
-  
-  PedalEvent finalPedal = new PedalEvent(finalVelocity, baseTime + changeDuration);
-  res.add(finalPedal);
-  
-  //println("Starting velocity is : " + startingVelocity + " and final is : " + finalVelocity);
-  //for (PedalEvent pedal : res) {
-  //  println("Velocity: " + pedal.getVelocity());
+  //int diff = (finalVelocity - startingVelocity) * -1;
+  //ArrayList<Integer> diffList = new ArrayList<Integer>();
+  //diffList.add(diff);
+  //while (abs(diff) > 1) {
+  //  float newDiff = lerp(diff, 0f, INTERPOLATION_AMOUNT_FOR_SMOOTH_PEDAL_CHANGE);
+  //  diff = int(newDiff);
+  //  diffList.add(diff);
   //}
   
-  
-  return res;
-  
-  // Linear method.
+  //int divisionCount = diffList.size();
+  //int divisionLength = changeDuration / divisionCount;
   
   //ArrayList<PedalEvent> res = new ArrayList<PedalEvent>();
-  
-  //int divisionLength = changeDuration / NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE;
-  //int changeRate = (finalVelocity - startingVelocity) / NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE;
-  
-  //// We add the final pedaling manually to avoid more calculated calculations.
-  //for (int i = 0; i < NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE; ++i) {
-  //  int velocity = startingVelocity + i * changeRate;
+  //for (int i = 0; i < divisionCount; ++i) {
+  //  int velocity = diffList.get(i) + finalVelocity;
   //  int time = baseTime + i * divisionLength;
+    
   //  PedalEvent pedal = new PedalEvent(velocity, time);
   //  res.add(pedal);
   //}
@@ -92,11 +66,37 @@ ArrayList<PedalEvent> getSmoothPedalChange(int startingVelocity, int finalVeloci
   //PedalEvent finalPedal = new PedalEvent(finalVelocity, baseTime + changeDuration);
   //res.add(finalPedal);
   
+  ////println("Starting velocity is : " + startingVelocity + " and final is : " + finalVelocity);
+  ////for (PedalEvent pedal : res) {
+  ////  println("Velocity: " + pedal.getVelocity());
+  ////}
+  
+  
+  //return res;
+  
+  // Linear method.
+  
+  ArrayList<PedalEvent> res = new ArrayList<PedalEvent>();
+  
+  int divisionLength = changeDuration / NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE;
+  int changeRate = (finalVelocity - startingVelocity) / NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE;
+  
+  // We add the final pedaling manually to avoid more calculated calculations.
+  for (int i = 0; i < NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE; ++i) {
+    int velocity = startingVelocity + i * changeRate;
+    int time = baseTime + i * divisionLength;
+    PedalEvent pedal = new PedalEvent(velocity, time);
+    res.add(pedal);
+  }
+  
+  PedalEvent finalPedal = new PedalEvent(finalVelocity, baseTime + changeDuration);
+  res.add(finalPedal);
+  
   //for (PedalEvent pedal : res) {
   //  println("Velocity: " + pedal.getVelocity());
   //}
   
-  //return res;
+  return res;
 }
 
 class SortPedalEventByStartTime implements Comparator<PedalEvent> {

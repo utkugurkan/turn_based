@@ -52,7 +52,16 @@ class GenMelody extends GenerationMethod {
     if (curIndex >= template.length) {
       curIndex = 0;
     }
-    int unitNoteLength = templateState.unitNoteLength;
+    
+    // Don't use the template information. Instead use the current.
+    //int unitNoteLength = templateState.unitNoteLength;
+    int unitNoteLength = int(map(
+      pieceState.speed.getValue(),
+      StateProperty.MAX_VAL,
+      StateProperty.MIN_VAL, 
+      MIN_UNIT_NOTE_DURATION, 
+      MAX_UNIT_NOTE_DURATION));
+    
     NoteEvent lastNote = templateState.prevNote;
    
     ArrayList<NoteEvent> gen = new ArrayList<NoteEvent>();
@@ -78,7 +87,17 @@ class GenMelody extends GenerationMethod {
       int fractionIndex = template[curIndex].length;
   
       int duration = int(ALLOWABLE_FRACTIONS[fractionIndex] * unitNoteLength);
-      if (!template[curIndex].isRest) {
+      
+      boolean shouldBeRest = template[curIndex].isRest;
+      if (duration <= MIN_NOTE_DURATION) {
+        // If the note is too short, skip it.
+        shouldBeRest = true;
+      }
+      else if (duration > MAX_NOTE_DURATION) {
+        duration = MAX_NOTE_DURATION;
+      }
+      
+      if (!shouldBeRest) {
         int newPitch = lastNote.getPitch() + template[curIndex].pitchDiff;
         // If possible, try to use a pitch from the seed that is approximately at this time.
         Map.Entry<Integer, NoteEvent> lowerBound = startTimeToSeedNote.floorEntry(curTime);
