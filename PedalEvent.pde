@@ -36,9 +36,26 @@ public class PedalEvent {
 //  return res;
 //}
 
-static final int NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE = 10;
-static final float INTERPOLATION_AMOUNT_FOR_SMOOTH_PEDAL_CHANGE = 0.1f;
+//static final int NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE = 10;
+//static final float INTERPOLATION_AMOUNT_FOR_SMOOTH_PEDAL_CHANGE = 0.1f;
+
+// In this piano, passing through the pedal level that corresponds to this velocity
+// to quickly makes a noise.
+static final int DELICATE_POINT_VELOCITY = 40;
 ArrayList<PedalEvent> getSmoothPedalChange(int startingVelocity, int finalVelocity, int baseTime, int changeDuration) {
+  
+  ArrayList<PedalEvent> res = new ArrayList<PedalEvent>();
+  
+  int firstPedalVelocity = startingVelocity;
+  if ((DELICATE_POINT_VELOCITY < startingVelocity && DELICATE_POINT_VELOCITY > finalVelocity) ||
+    (DELICATE_POINT_VELOCITY > startingVelocity && DELICATE_POINT_VELOCITY < finalVelocity)) {
+    firstPedalVelocity = DELICATE_POINT_VELOCITY;
+  }
+  PedalEvent startingPedal = new PedalEvent(firstPedalVelocity, baseTime);
+  PedalEvent finalPedal = new PedalEvent(finalVelocity, baseTime + changeDuration);
+  res.add(startingPedal);
+  res.add(finalPedal);
+  return res;
   
   // Lerp method.
   
@@ -76,27 +93,27 @@ ArrayList<PedalEvent> getSmoothPedalChange(int startingVelocity, int finalVeloci
   
   // Linear method.
   
-  ArrayList<PedalEvent> res = new ArrayList<PedalEvent>();
+  //ArrayList<PedalEvent> res = new ArrayList<PedalEvent>();
   
-  int divisionLength = changeDuration / NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE;
-  int changeRate = (finalVelocity - startingVelocity) / NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE;
+  //int divisionLength = changeDuration / NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE;
+  //int changeRate = (finalVelocity - startingVelocity) / NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE;
   
-  // We add the final pedaling manually to avoid more calculated calculations.
-  for (int i = 0; i < NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE; ++i) {
-    int velocity = startingVelocity + i * changeRate;
-    int time = baseTime + i * divisionLength;
-    PedalEvent pedal = new PedalEvent(velocity, time);
-    res.add(pedal);
-  }
-  
-  PedalEvent finalPedal = new PedalEvent(finalVelocity, baseTime + changeDuration);
-  res.add(finalPedal);
-  
-  //for (PedalEvent pedal : res) {
-  //  println("Velocity: " + pedal.getVelocity());
+  //// We add the final pedaling manually to avoid more calculated calculations.
+  //for (int i = 0; i < NUM_DIVISIONS_FOR_SMOOTH_PEDAL_CHANGE; ++i) {
+  //  int velocity = startingVelocity + i * changeRate;
+  //  int time = baseTime + i * divisionLength;
+  //  PedalEvent pedal = new PedalEvent(velocity, time);
+  //  res.add(pedal);
   //}
   
-  return res;
+  //PedalEvent finalPedal = new PedalEvent(finalVelocity, baseTime + changeDuration);
+  //res.add(finalPedal);
+  
+  ////for (PedalEvent pedal : res) {
+  ////  println("Velocity: " + pedal.getVelocity());
+  ////}
+  
+  //return res;
 }
 
 class SortPedalEventByStartTime implements Comparator<PedalEvent> {
