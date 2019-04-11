@@ -129,7 +129,6 @@ class GenMelody extends GenerationMethod {
     return gen.toArray(genResultArr);
   }
   
-  // TODO: Incorporate directions.
   private static final int DIRECTIONAL_CONFIDENCE_INITIAL_MIN = 3;
   private static final int DIRECTIONAL_CONFIDENCE_INITIAL_MAX = 12;
   
@@ -137,7 +136,7 @@ class GenMelody extends GenerationMethod {
   //private static final int MAX_REPEATABLE_INTERVAL;
   
   private static final float NOTE_LENGTH_INDEX_STANDARD_DEV = 3f;
-  //private static 
+
   private static final int MIN_DOMINANT_FRACTION_LENGTH = 1;
   private static final int MAX_DOMINANT_FRACTION_LENGTH = 8;
   
@@ -145,6 +144,8 @@ class GenMelody extends GenerationMethod {
   private static final int MAX_PITCH_VARIATION_BETWEEN_NOTES = +14;
   private static final float PITCH_VARIATION_STANDARD_DEVIATION = 4f;
   private static final float PITCH_VARIATION_MEAN = 3f;
+  
+  private static final float REST_PROBABILITY = 0.2f;
   
   // Current thoughts and methodology:
   // Determine a "dominant" note length (or fraction) to be used for a certain amount of time.
@@ -154,7 +155,6 @@ class GenMelody extends GenerationMethod {
       modifyTemplate(template);
       return template;
     }
-    //println("ATTN!! Generating new melody template");
     
     int templateLength = calculateTemplateLength(seedLength);
     
@@ -218,23 +218,33 @@ class GenMelody extends GenerationMethod {
         dominantFractionDurationLeft = int(random(MIN_DOMINANT_FRACTION_LENGTH, MAX_DOMINANT_FRACTION_LENGTH + 0.5));
       }
       
-      if (curDirectionalConfidence <= 0) {
-        direction = !direction;
-        curDirectionalConfidence = int(random(DIRECTIONAL_CONFIDENCE_INITIAL_MIN, DIRECTIONAL_CONFIDENCE_INITIAL_MAX + 0.5));
+      int pitchVariance = 0;
+      boolean isRest = false;
+      // Check to add rest.
+      if (random(1.0) < REST_PROBABILITY) {
+        isRest = true;
       }
       
-      // The result will be >= 0 by default
-      int pitchVariance = int(randomTruncatedGaussian(
-        MIN_PITCH_VARIATION_BETWEEN_NOTES,
-        MAX_PITCH_VARIATION_BETWEEN_NOTES, 
-        PITCH_VARIATION_MEAN, 
-        PITCH_VARIATION_STANDARD_DEVIATION));
-      if (!direction) {
-        pitchVariance *= -1;
+      // If not rest, then add note.
+      if (!isRest) {
+        if (curDirectionalConfidence <= 0) {
+          direction = !direction;
+          curDirectionalConfidence = int(random(DIRECTIONAL_CONFIDENCE_INITIAL_MIN, DIRECTIONAL_CONFIDENCE_INITIAL_MAX + 0.5));
+        }
+      
+        // The result will be >= 0 by default
+        pitchVariance = int(randomTruncatedGaussian(
+          MIN_PITCH_VARIATION_BETWEEN_NOTES,
+          MAX_PITCH_VARIATION_BETWEEN_NOTES, 
+          PITCH_VARIATION_MEAN, 
+          PITCH_VARIATION_STANDARD_DEVIATION));
+        if (!direction) {
+          pitchVariance *= -1;
+        }
+        curDirectionalConfidence -= abs(pitchVariance);
       }
-      curDirectionalConfidence -= abs(pitchVariance);
-        
-      pattern.add(new PatternEntity(pitchVariance, dominantFractionIndex, false));
+      
+      pattern.add(new PatternEntity(pitchVariance, dominantFractionIndex, isRest));
       curLength += unitNoteLength * ALLOWABLE_FRACTIONS[dominantFractionIndex];
       --dominantFractionDurationLeft;
     }
