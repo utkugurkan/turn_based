@@ -1,8 +1,8 @@
 import java.lang.Object;
 
 final GenerationMethod[] GEN_METHODS = {
-    new GenAddOctaves(),
-    new GenAddRandomPitchOffset(),
+    //new GenAddOctaves(),
+    //new GenAddRandomPitchOffset(),
     //new GenFillBetweenNotes(),
     new GenEmpty(),
     new GenIdentity(),
